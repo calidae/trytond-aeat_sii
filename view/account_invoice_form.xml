@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!--The COPYRIGHT file at the top level of this repository
+contains the full copyright notices and license terms. -->
+<data>
+    <xpath expr="/form/notebook"  position="inside">
+      <page id="sii" string="Aeat SII">
+          <label name="sii_book_key"/>
+          <field name="sii_book_key" colspan="3"/>
+          <label name="sii_operation_key"/>
+          <field name="sii_operation_key" colspan="3"/>
+          <label name="sii_subjected"/>
+          <field name="sii_subjected" colspan="3"/>
+          <label name="sii_issued_key"/>
+          <field name="sii_issued_key" colspan="3"/>
+          <label name="sii_received_key"/>
+          <field name="sii_received_key" colspan="3"/>
+          <label name="sii_intracomunity_key"/>
+          <field name="sii_intracomunity_key" colspan="3"/>
+          <label name="sii_excemtion_cause"/>
+          <field name="sii_excemtion_cause" colspan="3"/>
+
+
+          <field name="sii_records" colspan="4"/>
+          <label name="sii_state"/>
+          <field name="sii_state"/>
+        </page>
+    </xpath>
+</data>

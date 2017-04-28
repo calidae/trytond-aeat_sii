@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!-- This file is part of Tryton.  The COPYRIGHT file at the top level of
+this repository contains the full copyright notices and license terms. -->
+<form string="AEAT SII Data Reasignation" col="2">
+        <label string="Select Key's to reasign invoices:"
+            id="reasing"/>
+        <newline/>
+        <label name="book_key"/>
+        <field name="book_key"/>
+        <label name="operation_key"/>
+        <field name="operation_key"/>
+</form>
