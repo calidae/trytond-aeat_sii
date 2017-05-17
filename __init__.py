@@ -5,10 +5,13 @@ from trytond.pool import Pool
 from . import invoice
 from . import aeat
 from . import party
+from . import company
+
 
 def register():
     Pool.register(
         party.Party,
+        company.Company,
         invoice.Invoice,
         invoice.ReasignSIIRecordStart,
         invoice.ReasignSIIRecordEnd,
