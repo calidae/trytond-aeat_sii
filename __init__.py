@@ -6,6 +6,7 @@ from . import invoice
 from . import aeat
 from . import party
 from . import company
+from . import load_pkcs12
 
 
 def register():
@@ -15,9 +16,11 @@ def register():
         invoice.Invoice,
         invoice.ReasignSIIRecordStart,
         invoice.ReasignSIIRecordEnd,
+        load_pkcs12.LoadPKCS12Start,
         aeat.SIIReport,
         aeat.SIIReportLine,
         module='aeat_sii', type_='model')
     Pool.register(
         invoice.ReasignSIIRecord,
+        load_pkcs12.LoadPKCS12,
         module='aeat_sii', type_='wizard')
