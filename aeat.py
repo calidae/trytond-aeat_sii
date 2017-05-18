@@ -2,6 +2,7 @@
 # The COPYRIGHT file at the top level of this repository contains the full
 # copyright notices and license terms.
 import unicodedata
+from logging import getLogger
 from decimal import Decimal
 from trytond.model import ModelSQL, ModelView, fields, Workflow
 from trytond.pyson import Eval
@@ -10,7 +11,7 @@ from trytond.transaction import Transaction
 from . import aeat_errors
 
 __all__ = ['SIIReport', 'SIIReportLine']
-
+_logger = getLogger(__name__)
 _ZERO = Decimal('0.0')
 
 COMMUNICATION_TYPE = [   # L0
@@ -259,7 +260,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         super(SIIReport, cls).__setup__()
         cls._buttons.update({
                 'draft': {
-                    'invisible': ~Eval('state').in_(['confirm',
+                    'invisible': ~Eval('state').in_(['confirmed',
                             'cancelled']),
                     'icon': 'tryton-go-previous',
                     },
@@ -268,7 +269,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                     'icon': 'tryton-go-next',
                     },
                 'send': {
-                    'invisible': ~Eval('state').in_(['confirm']),
+                    'invisible': ~Eval('state').in_(['confirmed']),
                     'icon': 'tryton-ok',
                     },
                 'cancel': {
@@ -285,7 +286,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                 ('draft', 'confirmed'),
                 ('draft', 'cancelled'),
                 ('confirmed', 'draft'),
-                ('confirmed', 'send'),
+                ('confirmed', 'sent'),
                 ('confirmed', 'cancelled'),
                 ('cancelled', 'draft'),
                 ))
@@ -333,16 +334,20 @@ class SIIReport(Workflow, ModelSQL, ModelView):
 
     @classmethod
     @ModelView.button
-    @Workflow.transition('send')
+    @Workflow.transition('sent')
     def send(cls, reports):
-        pass
+        _logger.info(
+            'Sending reports (%s) to AEAT SII',
+            ','.join(str(r.id) for r in reports))
+        for report in reports:
+            with report.company.tmp_ssl_credentials() as (crt, key):
+                raise NotImplementedError
 
     @classmethod
     @ModelView.button
-    @Workflow.transition('cancel')
+    @Workflow.transition('cancelled')
     def cancel(cls, reports):
         pass
-
 
     @classmethod
     @ModelView.button
@@ -351,25 +356,25 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         Invoice = pool.get('account.invoice')
         ReportLine = pool.get('aeat.sii.report.lines')
 
-        to_create = []
         for report in reports:
-            domain = [('sii_book_key', '=', report.book),
+            domain = [
+                ('sii_book_key', '=', report.book),
                 ('move.period', '=', report.period.id),
-                ('state', 'in', ['posted', 'paid'])]
+                ('state', 'in', ['posted', 'paid']),
+            ]
 
             if report.operation_type == 'A0':
-                domain += [('sii_state', '=', None)]
+                domain.append(('sii_state', '=', None))
             elif report.operation_type in ('A1', 'A4'):
-                domain += [('sii_state', 'in',
-                    ['ACEPTADOCONERRORES', 'INCORRECTO'])]
+                domain.append(('sii_state', 'in', [
+                    'ACEPTADOCONERRORES', 'INCORRECTO']))
 
-            print "domain:", domain
+            _logger.debug('Searching invoices for SII report: %s', domain)
             invoices = Invoice.search(domain)
-            report.lines = []
-            for invoice in invoices:
-                l = ReportLine(invoice=invoice, report=report)
-                report.lines += [l]
-
+            report.lines = [
+                ReportLine(invoice=invoice, report=report)
+                for invoice in invoices
+            ]
             report.save()
 
 
@@ -379,14 +384,14 @@ class SIIReportLine(ModelSQL, ModelView):
     '''
     __name__ = 'aeat.sii.report.lines'
 
-    report = fields.Many2One('aeat.sii.report', 'Issued Report',
-        ondelete='CASCADE')
+    report = fields.Many2One(
+        'aeat.sii.report', 'Issued Report', ondelete='CASCADE')
     invoice = fields.Many2One('account.invoice', 'Invoice')
-    state = fields.Selection(AEAT_INVOICE_STATE, 'State') #, readonly=True)
-    communication_msg = fields.Selection(aeat_errors.AEAT_ERRORS,
-        'Communication Message', readonly=True)
-    company = fields.Many2One('company.company', 'Company', required=True,
-        select=True)
+    state = fields.Selection(AEAT_INVOICE_STATE, 'State')
+    communication_msg = fields.Selection(
+        aeat_errors.AEAT_ERRORS, 'Communication Message', readonly=True)
+    company = fields.Many2One(
+        'company.company', 'Company', required=True, select=True)
 
     @staticmethod
     def default_company():

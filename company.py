@@ -3,6 +3,9 @@
 #the full copyright notices and license terms.
 
 from logging import getLogger
+from contextlib import contextmanager
+from tempfile import NamedTemporaryFile
+
 from cryptography.fernet import Fernet
 
 from trytond.config import config
@@ -84,3 +87,13 @@ class Company:
             cls.raise_user_error('missing_fernet_key')
         else:
             return Fernet(fernet_key)
+
+    @contextmanager
+    def tmp_ssl_credentials(self):
+        with NamedTemporaryFile(suffix='.crt') as crt:
+            with NamedTemporaryFile(suffix='.pem') as key:
+                crt.write(self.pem_certificate)
+                key.write(self.private_key)
+                crt.flush()
+                key.flush()
+                yield (crt.name, key.name)
