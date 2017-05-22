@@ -5,5 +5,6 @@
     <field name="report"/>
     <field name="invoice"/>
     <field name="state"/>
+    <field name="communication_code"/>
     <field name="communication_msg"/>
 </tree>

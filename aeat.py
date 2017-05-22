@@ -1,16 +1,26 @@
 # -*- coding: utf-8 -*-
 # The COPYRIGHT file at the top level of this repository contains the full
 # copyright notices and license terms.
+
+__all__ = [
+    'SIIReport',
+    'SIIReportLine',
+]
+
 import unicodedata
 from logging import getLogger
 from decimal import Decimal
+
 from trytond.model import ModelSQL, ModelView, fields, Workflow
 from trytond.pyson import Eval
-from trytond.pool import Pool, PoolMeta
+from trytond.pool import Pool
 from trytond.transaction import Transaction
-from . import aeat_errors
 
-__all__ = ['SIIReport', 'SIIReportLine']
+from . import aeat_errors
+from .pyAEATsii import service
+from .pyAEATsii import mapping
+
+
 _logger = getLogger(__name__)
 _ZERO = Decimal('0.0')
 
@@ -55,7 +65,8 @@ PARTY_IDENTIFIER_TYPE = [
     ('04', 'Official Document Emmited by the Country of Residence'),
     ('05', 'Certificate of fiscal resident'),
     ('06', 'Other proving document'),
-    ]
+    ('07', 'Not on the Census'),
+]
 
 
 SEND_SPECIAL_REGIME_KEY = [  # L3.1
@@ -105,16 +116,16 @@ RECEIVE_SPECIAL_REGIME_KEY = [
 
 AEAT_COMMUNICATION_STATE = [
     (None, ''),
-    ('CORRECTO', 'Accepted'),
-    ('PARCIALMENTECORRECTO', 'Partial Accepted'),
-    ('INCORRECTO', 'Rejected')
+    ('Correcto', 'Accepted'),
+    ('ParcialmenteCorrecto', 'Partially Accepted'),
+    ('Incorrecto', 'Rejected')
 ]
 
 AEAT_INVOICE_STATE = [
     (None, ''),
-    ('CORRECTO', 'Accepted'),
-    ('ACEPTADOCONERRORES', 'Accepted with Errors'),
-    ('INCORRECTO', 'Rejected')
+    ('Correcto', 'Accepted'),
+    ('AceptadoConErrores', 'Accepted with Errors'),
+    ('Incorrecto', 'Rejected')
 ]
 
 
@@ -237,8 +248,9 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             ('draft', 'Draft'),
             ('confirmed', 'Confirmed'),
             ('done', 'Done'),
-            ('cancelled', 'Cancelled')
-            ], 'State', readonly=True)
+            ('cancelled', 'Cancelled'),
+            ('sent', 'Sent'),
+        ], 'State', readonly=True)
 
     communication_state = fields.Selection( AEAT_COMMUNICATION_STATE,
         'Communication State', readonly=True)
@@ -273,7 +285,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                     'icon': 'tryton-ok',
                     },
                 'cancel': {
-                    'invisible': Eval('state').in_(['cancelled']),
+                    'invisible': Eval('state').in_(['cancelled', 'sent']),
                     'icon': 'tryton-cancel',
                     },
                 'load_invoices': {
@@ -336,12 +348,39 @@ class SIIReport(Workflow, ModelSQL, ModelView):
     @ModelView.button
     @Workflow.transition('sent')
     def send(cls, reports):
-        _logger.info(
-            'Sending reports (%s) to AEAT SII',
-            ','.join(str(r.id) for r in reports))
-        for report in reports:
+
+        def call_aeat(headers, invoices):
             with report.company.tmp_ssl_credentials() as (crt, key):
-                raise NotImplementedError
+                _logger.debug('Service invoices request: %s', invoices)
+                srv = service.bind_SuministroFactEmitidas(crt, key, test=True)
+                res = srv.SuministroLRFacturasEmitidas(headers, invoices)
+                _logger.debug('Service response: %s', res)
+                return res
+
+        pool = Pool()
+        Company = pool.get('company.company')
+        Invoice = pool.get('account.invoice')
+        company = Company(Transaction().context.get('company'))
+        headers = mapping.get_headers(
+            name=company.party.name, vat=company.party.vat_number,
+            comm_kind='A0')
+        for report in reports:
+                _logger.info('Sending report %s to AEAT SII', report.id)
+                invoices = Invoice.map_to_aeat_sii(
+                    line.invoice for line in report.lines)
+                res = call_aeat(headers, invoices)
+                # TODO: assert response lines order matches report line order
+                for (report_line, response_line) in zip(
+                        report.lines, res.RespuestaLinea):
+                    report_line.state = response_line.EstadoRegistro
+                    report_line.communication_code = \
+                        response_line.CodigoErrorRegistro
+                    report_line.communication_msg = \
+                        response_line.DescripcionErrorRegistro
+                    report_line.save()
+                report.communication_state = res.EstadoEnvio
+                report.save()
+        _logger.debug('Done sending reports to AEAT SII')
 
     @classmethod
     @ModelView.button
@@ -388,8 +427,10 @@ class SIIReportLine(ModelSQL, ModelView):
         'aeat.sii.report', 'Issued Report', ondelete='CASCADE')
     invoice = fields.Many2One('account.invoice', 'Invoice')
     state = fields.Selection(AEAT_INVOICE_STATE, 'State')
-    communication_msg = fields.Selection(
-        aeat_errors.AEAT_ERRORS, 'Communication Message', readonly=True)
+    communication_code = fields.Selection(
+        aeat_errors.AEAT_ERRORS, 'Communication Code', readonly=True)
+    communication_msg = fields.Char(
+        'Communication Message', readonly=True)
     company = fields.Many2One(
         'company.company', 'Company', required=True, select=True)
 
