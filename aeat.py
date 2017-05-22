@@ -255,10 +255,13 @@ class SIIReport(Workflow, ModelSQL, ModelView):
     communication_state = fields.Selection( AEAT_COMMUNICATION_STATE,
         'Communication State', readonly=True)
 
+    csv = fields.Char(
+        'CSV', readonly=True
+    )
+
     version = fields.Selection([
             ('0.7', '0.7'),
             ], 'Version', required=True, states={
-                'readonly': ~Eval('state').in_(['draft', 'confirmed']),
                 }, depends=['state'])
 
     lines = fields.One2Many('aeat.sii.report.lines', 'report',
@@ -372,14 +375,18 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                 # TODO: assert response lines order matches report line order
                 for (report_line, response_line) in zip(
                         report.lines, res.RespuestaLinea):
-                    report_line.state = response_line.EstadoRegistro
-                    report_line.communication_code = \
-                        response_line.CodigoErrorRegistro
-                    report_line.communication_msg = \
-                        response_line.DescripcionErrorRegistro
-                    report_line.save()
-                report.communication_state = res.EstadoEnvio
-                report.save()
+                    report_line.write([report_line], {
+                        'state':
+                            response_line.EstadoRegistro,
+                        'communication_code':
+                            response_line.CodigoErrorRegistro,
+                        'communication_msg':
+                            response_line.DescripcionErrorRegistro,
+                    })
+                report.write([report], {
+                    'communication_state': res.EstadoEnvio,
+                    'csv': res.CSV,
+                })
         _logger.debug('Done sending reports to AEAT SII')
 
     @classmethod
