@@ -427,8 +427,8 @@ class SIIReportLine(ModelSQL, ModelView):
         'aeat.sii.report', 'Issued Report', ondelete='CASCADE')
     invoice = fields.Many2One('account.invoice', 'Invoice')
     state = fields.Selection(AEAT_INVOICE_STATE, 'State')
-    communication_code = fields.Selection(
-        aeat_errors.AEAT_ERRORS, 'Communication Code', readonly=True)
+    communication_code = fields.Integer(
+        'Communication Code', readonly=True)
     communication_msg = fields.Char(
         'Communication Message', readonly=True)
     company = fields.Many2One(
