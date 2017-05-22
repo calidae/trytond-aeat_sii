@@ -256,7 +256,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         'Communication State', readonly=True)
 
     version = fields.Selection([
-            ('0.6', '0.6'),
+            ('0.7', '0.7'),
             ], 'Version', required=True, states={
                 'readonly': ~Eval('state').in_(['draft', 'confirmed']),
                 }, depends=['state'])

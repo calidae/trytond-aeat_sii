@@ -5,7 +5,7 @@ __all__ = [
 ]
 
 
-def get_headers(name=None, vat=None, comm_kind=None, version='0.6'):
+def get_headers(name=None, vat=None, comm_kind=None, version='0.7'):
     return {
         'IDVersionSii': version,
         'Titular': {
@@ -17,75 +17,89 @@ def get_headers(name=None, vat=None, comm_kind=None, version='0.6'):
 
 
 class OutInvoiceMapper(object):
-    def __init__(self):
-        pass
 
-    def build_request(self, invoice):
+    @classmethod
+    def build_request(cls, invoice):
         return {
-            'PeriodoImpositivo': self.build_period(invoice),
-            'IDFactura': self.build_invoice_id(invoice),
-            'FacturaExpedida': self.build_issued_invoice(invoice),
+            'PeriodoImpositivo': cls.build_period(invoice),
+            'IDFactura': cls.build_invoice_id(invoice),
+            'FacturaExpedida': cls.build_issued_invoice(invoice),
         }
 
-    def build_period(self, invoice):
+    @classmethod
+    def build_period(cls, invoice):
         return {
-            'Ejercicio': self.year(invoice),
-            'Periodo': str(self.period(invoice)).zfill(2),
+            'Ejercicio': cls.year(invoice),
+            'Periodo': str(cls.period(invoice)).zfill(2),
         }
 
-    def build_invoice_id(self, invoice):
+    @classmethod
+    def build_invoice_id(cls, invoice):
         return {
             'IDEmisorFactura': {
-                'NIF': self.nif(invoice),
+                'NIF': cls.nif(invoice),
             },
-            'NumSerieFacturaEmisor': self.serial_number(invoice),
+            'NumSerieFacturaEmisor': cls.serial_number(invoice),
             'FechaExpedicionFacturaEmisor':
-                self.issue_date(invoice).strftime('%d/%m/%Y'),
+                cls.issue_date(invoice).strftime('%d/%m/%Y'),
         }
 
-    def build_issued_invoice(self, invoice):
+    @classmethod
+    def build_issued_invoice(cls, invoice):
         ret = {
-            'TipoFactura': self.invoice_kind(invoice),
+            'TipoFactura': cls.invoice_kind(invoice),
             'ClaveRegimenEspecialOTrascendencia':
-                self.specialkey_or_trascendence(invoice),
-            'DescripcionOperacion': self.description(invoice),
+                cls.specialkey_or_trascendence(invoice),
+            'DescripcionOperacion': cls.description(invoice),
             'TipoDesglose': {
                 'DesgloseFactura': {
                     'Sujeta': {
                         # 'Exenta': {
+                        #     'CausaExcencion': E1-E6
                         #     'BaseImponible': '0.00',
                         # },
                         'NoExenta': {
-                            'TipoNoExenta': self.not_exempt_kind(invoice),
+                            'TipoNoExenta': cls.not_exempt_kind(invoice),
                             'DesgloseIVA': {
                                 'DetalleIVA':
-                                    map(self.build_taxes, self.taxes(invoice)),
+                                    map(cls.build_taxes, cls.taxes(invoice)),
                             }
                         },
                     },
                     # 'NoSujeta': {
+                    #     'ImportePorArticulos7_14_Otros': 0,
+                    #     'ImporteTAIReglasLocalizacion': 0,
                     # },
                 },
+                # 'DesgloseTipoOperacion': {
+                #     'PrestacionDeServicios':
+                #         {'Sujeta': {'Exenta': {}, 'NoExenta': {}}, 'NoSujeta': {}},
+                #     'Entrega':
+                #         {'Sujeta': {'Exenta': {}, 'NoExenta': {}}, 'NoSujeta': {}},
+                # },
             },
         }
         if ret['TipoFactura'] not in {'F2', 'F4', 'R5'}:
-            ret['Contraparte'] = self.build_counterpart(invoice)
+            ret['Contraparte'] = cls.build_counterpart(invoice)
         return ret
 
-    def build_counterpart(self, invoice):
+    @classmethod
+    def build_counterpart(cls, invoice):
         return {
-            'NombreRazon': self.counterpart_name(invoice),
-            # 'NIF': self.counterpart_nif(invoice),
+            'NombreRazon': cls.counterpart_name(invoice),
+            # 'NIF': cls.counterpart_nif(invoice),
             'IDOtro': {
-                'IDType': self.counterpart_id_type(invoice),
-                'CodigoPais': self.counterpart_country(invoice),
-                'ID': self.counterpart_nif(invoice),
+                'IDType': cls.counterpart_id_type(invoice),
+                'CodigoPais': cls.counterpart_country(invoice),
+                'ID': cls.counterpart_nif(invoice),
             },
         }
 
-    def build_taxes(self, tax):
+    @classmethod
+    def build_taxes(cls, tax):
         return {
-            'TipoImpositivo': int(100 * self.tax_rate(tax)),
-            'BaseImponible': self.tax_base(tax),
-            'CuotaRepercutida': self.tax_amount(tax),
+            'TipoImpositivo': int(100 * cls.tax_rate(tax)),
+            'BaseImponible': cls.tax_base(tax),
+            'CuotaRepercutida': cls.tax_amount(tax),
+            # TODO: TipoRecargoEquivalencia, CuotaRecargoEquivalencia
         }

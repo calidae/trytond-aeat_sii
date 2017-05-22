@@ -29,7 +29,7 @@ def bind_SuministroFactEmitidas(crt, pkey, test=False):
     wsdl = (
         'http://www.agenciatributaria.es/static_files/AEAT/'
         'Contenidos_Comunes/La_Agencia_Tributaria/Modelos_y_formularios/'
-        'Suministro_inmediato_informacion/FicherosSuministros/V_06/'
+        'Suministro_inmediato_informacion/FicherosSuministros/V_07/'
         'SuministroFactEmitidas.wsdl'
     )
     port_name = 'SuministroFactEmitidas'
