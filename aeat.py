@@ -16,7 +16,6 @@ from trytond.pyson import Eval
 from trytond.pool import Pool
 from trytond.transaction import Transaction
 
-from . import aeat_errors
 from .pyAEATsii import service
 from .pyAEATsii import mapping
 
@@ -28,9 +27,8 @@ COMMUNICATION_TYPE = [   # L0
     ('A0', 'New Invoices'),
     ('A1', 'Modify Invoices'),
     ('A4', 'Modify (Travelers)'),
-    ('C0', 'Query Invoices'), # Not in L0
-    ('D0', 'Delete Invoices'), # Not In L0
-
+    ('C0', 'Query Invoices'),  # Not in L0
+    ('D0', 'Delete Invoices'),  # Not In L0
 ]
 
 BOOK_KEY = [
@@ -41,7 +39,7 @@ BOOK_KEY = [
     ('F', 'IGIC Issued Invoices'),
     ('J', 'IGIC Investment Goods'),
     ('S', 'IGIC Received Invoices'),
-    ]
+]
 
 OPERATION_KEY = [    # L2_EMI - L2_RECI
     ('F1', 'Invoice'),
@@ -125,6 +123,7 @@ AEAT_INVOICE_STATE = [
     (None, ''),
     ('Correcto', 'Accepted'),
     ('AceptadoConErrores', 'Accepted with Errors'),
+    ('AceptadaConErrores', 'Accepted with Errors'),  # Shame on AEAT
     ('Incorrecto', 'Rejected')
 ]
 
@@ -351,42 +350,16 @@ class SIIReport(Workflow, ModelSQL, ModelView):
     @ModelView.button
     @Workflow.transition('sent')
     def send(cls, reports):
-
-        def call_aeat(headers, invoices):
-            with report.company.tmp_ssl_credentials() as (crt, key):
-                _logger.debug('Service invoices request: %s', invoices)
-                srv = service.bind_SuministroFactEmitidas(crt, key, test=True)
-                res = srv.SuministroLRFacturasEmitidas(headers, invoices)
-                _logger.debug('Service response: %s', res)
-                return res
-
-        pool = Pool()
-        Company = pool.get('company.company')
-        Invoice = pool.get('account.invoice')
-        company = Company(Transaction().context.get('company'))
-        headers = mapping.get_headers(
-            name=company.party.name, vat=company.party.vat_number,
-            comm_kind='A0')
         for report in reports:
-                _logger.info('Sending report %s to AEAT SII', report.id)
-                invoices = Invoice.map_to_aeat_sii(
-                    line.invoice for line in report.lines)
-                res = call_aeat(headers, invoices)
-                # TODO: assert response lines order matches report line order
-                for (report_line, response_line) in zip(
-                        report.lines, res.RespuestaLinea):
-                    report_line.write([report_line], {
-                        'state':
-                            response_line.EstadoRegistro,
-                        'communication_code':
-                            response_line.CodigoErrorRegistro,
-                        'communication_msg':
-                            response_line.DescripcionErrorRegistro,
-                    })
-                report.write([report], {
-                    'communication_state': res.EstadoEnvio,
-                    'csv': res.CSV,
-                })
+            if report.book == 'E':  # issued invoices
+                if report.operation_type == 'A0':  # new invoices
+                    report.submit_issued_invoices()
+                elif report.operation_type == 'C0':  # query invoices
+                    report.query_issued_invoices()
+                else:
+                    raise NotImplementedError
+            else:
+                raise NotImplementedError
         _logger.debug('Done sending reports to AEAT SII')
 
     @classmethod
@@ -422,6 +395,93 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                 for invoice in invoices
             ]
             report.save()
+
+    def submit_issued_invoices(self):
+        _logger.info('Sending report %s to AEAT SII', self.id)
+        pool = Pool()
+        Company = pool.get('company.company')
+        Invoice = pool.get('account.invoice')
+        company = Company(Transaction().context.get('company'))
+        headers = mapping.get_headers(
+            name=company.party.name, vat=company.party.vat_number,
+            comm_kind=self.operation_type)
+        invoices = Invoice.map_to_aeat_sii(
+            line.invoice for line in self.lines)
+        res = None
+        with self.company.tmp_ssl_credentials() as (crt, key):
+            srv = service.bind_SuministroFactEmitidas(crt, key, test=True)
+            res = srv.SuministroLRFacturasEmitidas(headers, invoices)
+        # TODO: assert response order matches report order
+        for (report_line, response_line) in zip(
+                self.lines, res.RespuestaLinea):
+            report_line.write([report_line], {
+                'state':
+                    response_line.EstadoRegistro,
+                'communication_code':
+                    response_line.CodigoErrorRegistro,
+                'communication_msg':
+                    response_line.DescripcionErrorRegistro,
+            })
+        self.write([self], {
+            'communication_state': res.EstadoEnvio,
+            'csv': res.CSV,
+        })
+
+    def query_issued_invoices(self):
+        res = None
+        pool = Pool()
+        Company = pool.get('company.company')
+        Invoice = pool.get('account.invoice')
+        company = Company(Transaction().context.get('company'))
+        headers = mapping.get_headers(
+            name=company.party.name, vat=company.party.vat_number,
+            comm_kind=self.operation_type)
+        filter_ = {
+            'PeriodoImpositivo': {
+                'Ejercicio': self.fiscalyear.name,
+                'Periodo': str(
+                    self.period.start_date.month).zfill(2),
+            }
+            # TODO: IDFactura, Contraparte,
+            # FechaPresentacion, FacturaModificada,
+            # EstadoCuadre, ClavePaginacion
+        }
+        with self.company.tmp_ssl_credentials() as (crt, key):
+            srv = service.bind_SuministroFactEmitidas(
+                crt, key, test=True)
+            res = srv.ConsultaLRFacturasEmitidas(
+                headers, filter_)
+
+        registers = \
+            res.RegistroRespuestaConsultaLRFacturasEmitidas
+        invoices_list = Invoice.search([
+            ('number', 'in', [
+                reg.IDFactura.NumSerieFacturaEmisor
+                for reg in registers
+            ])
+        ])
+        invoices_ids = {
+            invoice.number: invoice.id
+            for invoice in invoices_list
+        }
+        lines_to_create = [
+            {
+                'invoice':
+                    invoices_ids.get(
+                        reg.IDFactura.NumSerieFacturaEmisor),
+                'state':
+                    reg.EstadoFactura.EstadoRegistro,
+                'communication_code':
+                    reg.EstadoFactura.CodigoErrorRegistro,
+                'communication_msg':
+                    reg.EstadoFactura.DescripcionErrorRegistro,
+                # FIXME: store any other info from the response
+            }
+            for reg in registers
+        ]
+        self.write([self], {
+            'lines': [('create', lines_to_create)]
+        })
 
 
 class SIIReportLine(ModelSQL, ModelView):
