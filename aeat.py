@@ -354,11 +354,11 @@ class SIIReport(Workflow, ModelSQL, ModelView):
     def send(cls, reports):
         for report in reports:
             if report.book == 'E':  # issued invoices
-                if report.operation_type == 'A0':  # new invoices
+                if report.operation_type in {'A0', 'A1'}:
                     report.submit_issued_invoices()
-                elif report.operation_type == 'C0':  # query invoices
+                elif report.operation_type == 'C0':
                     report.query_issued_invoices()
-                elif report.operation_type == 'D0':  # delete invoices
+                elif report.operation_type == 'D0':
                     report.delete_issued_invoices()
                 else:
                     raise NotImplementedError
