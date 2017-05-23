@@ -19,12 +19,17 @@ def get_headers(name=None, vat=None, comm_kind=None, version='0.7'):
 class OutInvoiceMapper(object):
 
     @classmethod
-    def build_request(cls, invoice):
+    def build_delete_request(cls, invoice):
         return {
             'PeriodoImpositivo': cls.build_period(invoice),
             'IDFactura': cls.build_invoice_id(invoice),
-            'FacturaExpedida': cls.build_issued_invoice(invoice),
         }
+
+    @classmethod
+    def build_submit_request(cls, invoice):
+        request = cls.build_delete_request(invoice)
+        request['FacturaExpedida'] = cls.build_issued_invoice(invoice)
+        return request
 
     @classmethod
     def build_period(cls, invoice):

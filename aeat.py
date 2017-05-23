@@ -10,6 +10,7 @@ __all__ = [
 import unicodedata
 from logging import getLogger
 from decimal import Decimal
+from operator import attrgetter
 
 from trytond.model import ModelSQL, ModelView, fields, Workflow
 from trytond.pyson import Eval
@@ -124,6 +125,7 @@ AEAT_INVOICE_STATE = [
     ('Correcto', 'Accepted'),
     ('AceptadoConErrores', 'Accepted with Errors'),
     ('AceptadaConErrores', 'Accepted with Errors'),  # Shame on AEAT
+    ('Anulada', 'Deleted'),
     ('Incorrecto', 'Rejected')
 ]
 
@@ -356,6 +358,8 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                     report.submit_issued_invoices()
                 elif report.operation_type == 'C0':  # query invoices
                     report.query_issued_invoices()
+                elif report.operation_type == 'D0':  # delete invoices
+                    report.delete_issued_invoices()
                 else:
                     raise NotImplementedError
             else:
@@ -398,15 +402,13 @@ class SIIReport(Workflow, ModelSQL, ModelView):
 
     def submit_issued_invoices(self):
         _logger.info('Sending report %s to AEAT SII', self.id)
-        pool = Pool()
-        Company = pool.get('company.company')
-        Invoice = pool.get('account.invoice')
-        company = Company(Transaction().context.get('company'))
         headers = mapping.get_headers(
-            name=company.party.name, vat=company.party.vat_number,
+            name=self.company.party.name,
+            vat=self.company.party.vat_number,
             comm_kind=self.operation_type)
-        invoices = Invoice.map_to_aeat_sii(
-            line.invoice for line in self.lines)
+        invoices = map(
+            IssuedTrytonInvoiceMapper.build_submit_request,
+            (line.invoice for line in self.lines))
         res = None
         with self.company.tmp_ssl_credentials() as (crt, key):
             srv = service.bind_SuministroFactEmitidas(crt, key, test=True)
@@ -415,12 +417,34 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         for (report_line, response_line) in zip(
                 self.lines, res.RespuestaLinea):
             report_line.write([report_line], {
-                'state':
-                    response_line.EstadoRegistro,
-                'communication_code':
-                    response_line.CodigoErrorRegistro,
-                'communication_msg':
-                    response_line.DescripcionErrorRegistro,
+                'state': response_line.EstadoRegistro,
+                'communication_code': response_line.CodigoErrorRegistro,
+                'communication_msg': response_line.DescripcionErrorRegistro,
+            })
+        self.write([self], {
+            'communication_state': res.EstadoEnvio,
+            'csv': res.CSV,
+        })
+
+    def delete_issued_invoices(self):
+        headers = mapping.get_headers(
+            name=self.company.party.name,
+            vat=self.company.party.vat_number,
+            comm_kind=self.operation_type)
+        invoices = map(
+            IssuedTrytonInvoiceMapper.build_delete_request,
+            (line.invoice for line in self.lines))
+        res = None
+        with self.company.tmp_ssl_credentials() as (crt, key):
+            srv = service.bind_SuministroFactEmitidas(crt, key, test=True)
+            res = srv.AnulacionLRFacturasEmitidas(headers, invoices)
+        # TODO: assert response order matches report order
+        for (report_line, response_line) in zip(
+                self.lines, res.RespuestaLinea):
+            report_line.write([report_line], {
+                'state': response_line.EstadoRegistro,
+                'communication_code': response_line.CodigoErrorRegistro,
+                'communication_msg': response_line.DescripcionErrorRegistro,
             })
         self.write([self], {
             'communication_state': res.EstadoEnvio,
@@ -430,11 +454,10 @@ class SIIReport(Workflow, ModelSQL, ModelView):
     def query_issued_invoices(self):
         res = None
         pool = Pool()
-        Company = pool.get('company.company')
         Invoice = pool.get('account.invoice')
-        company = Company(Transaction().context.get('company'))
         headers = mapping.get_headers(
-            name=company.party.name, vat=company.party.vat_number,
+            name=self.company.party.name,
+            vat=self.company.party.vat_number,
             comm_kind=self.operation_type)
         filter_ = {
             'PeriodoImpositivo': {
@@ -482,6 +505,26 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         self.write([self], {
             'lines': [('create', lines_to_create)]
         })
+
+
+class IssuedTrytonInvoiceMapper(mapping.OutInvoiceMapper):
+    year = attrgetter('move.period.fiscalyear.name')
+    period = attrgetter('move.period.start_date.month')
+    nif = attrgetter('company.party.vat_number')
+    serial_number = attrgetter('number')
+    issue_date = attrgetter('invoice_date')
+    invoice_kind = attrgetter('sii_operation_key')
+    specialkey_or_trascendence = attrgetter('sii_issued_key')
+    description = attrgetter('description')
+    not_exempt_kind = attrgetter('sii_subjected')
+    counterpart_name = attrgetter('party.name')
+    counterpart_nif = attrgetter('party.vat_number')
+    counterpart_id_type = attrgetter('party.identifier_type')
+    counterpart_country = attrgetter('party.vat_country')
+    taxes = attrgetter('taxes')
+    tax_rate = attrgetter('tax.rate')
+    tax_base = attrgetter('base')
+    tax_amount = attrgetter('amount')
 
 
 class SIIReportLine(ModelSQL, ModelView):

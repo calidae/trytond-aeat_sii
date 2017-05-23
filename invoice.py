@@ -1,24 +1,22 @@
 # The COPYRIGHT file at the top level of this repository contains the full
 # copyright notices and license terms.
 
-from operator import attrgetter
-
-from trytond import backend
-from trytond.model import ModelSQL, ModelView, fields
+from trytond.model import ModelView, fields
 from trytond.wizard import Wizard, StateView, StateTransition, Button
 from trytond.pool import Pool, PoolMeta
-from trytond.pyson import Eval, And, Bool
+from trytond.pyson import Eval
 from trytond.transaction import Transaction
 from sql.operators import In
 from sql.aggregate import Max
-from .aeat import (OPERATION_KEY, BOOK_KEY, SEND_SPECIAL_REGIME_KEY,
-        RECEIVE_SPECIAL_REGIME_KEY, AEAT_INVOICE_STATE, IVA_SUBJECTED,
-        EXCEMPTION_CAUSE, INTRACOMUNITARY_TYPE)
+from .aeat import (
+    OPERATION_KEY, BOOK_KEY, SEND_SPECIAL_REGIME_KEY,
+    RECEIVE_SPECIAL_REGIME_KEY, AEAT_INVOICE_STATE, IVA_SUBJECTED,
+    EXCEMPTION_CAUSE, INTRACOMUNITARY_TYPE)
 
-from .pyAEATsii import mapping
-
-__all__ = ['Invoice', 'ReasignSIIRecord', 'ReasignSIIRecordStart',
-    'ReasignSIIRecordEnd']
+__all__ = [
+    'Invoice', 'ReasignSIIRecord', 'ReasignSIIRecordStart',
+    'ReasignSIIRecordEnd'
+]
 
 
 class Invoice:
@@ -111,31 +109,6 @@ class Invoice:
                 result['sii_state'][inv] = state
 
         return result
-
-    @classmethod
-    def map_to_aeat_sii(cls, invoices):
-        mapper = IssuedTrytonInvoiceMapper()
-        return map(mapper.build_request, invoices)
-
-
-class IssuedTrytonInvoiceMapper(mapping.OutInvoiceMapper):
-    year = attrgetter('move.period.fiscalyear.name')
-    period = attrgetter('move.period.start_date.month')
-    nif = attrgetter('company.party.vat_number')
-    serial_number = attrgetter('number')
-    issue_date = attrgetter('invoice_date')
-    invoice_kind = attrgetter('sii_operation_key')
-    specialkey_or_trascendence = attrgetter('sii_issued_key')
-    description = attrgetter('description')
-    not_exempt_kind = attrgetter('sii_subjected')
-    counterpart_name = attrgetter('party.name')
-    counterpart_nif = attrgetter('party.vat_number')
-    counterpart_id_type = attrgetter('party.identifier_type')
-    counterpart_country = attrgetter('party.vat_country')
-    taxes = attrgetter('taxes')
-    tax_rate = attrgetter('tax.rate')
-    tax_base = attrgetter('base')
-    tax_amount = attrgetter('amount')
 
 
 class ReasignSIIRecordStart(ModelView):
