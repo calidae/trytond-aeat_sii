@@ -14,13 +14,10 @@ def register():
         party.Party,
         company.Company,
         invoice.Invoice,
-        invoice.ReasignSIIRecordStart,
-        invoice.ReasignSIIRecordEnd,
         load_pkcs12.LoadPKCS12Start,
         aeat.SIIReport,
         aeat.SIIReportLine,
         module='aeat_sii', type_='model')
     Pool.register(
-        invoice.ReasignSIIRecord,
         load_pkcs12.LoadPKCS12,
         module='aeat_sii', type_='wizard')

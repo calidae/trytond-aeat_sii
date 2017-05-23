@@ -1,23 +1,23 @@
 # The COPYRIGHT file at the top level of this repository contains the full
 # copyright notices and license terms.
 
-from trytond.model import ModelView, fields
+from operator import attrgetter
+
+from trytond import backend
+from trytond.model import ModelSQL, ModelView, fields
 from trytond.wizard import Wizard, StateView, StateTransition, Button
 from trytond.pool import Pool, PoolMeta
-from trytond.pyson import Eval
+from trytond.pyson import Eval, And, Bool
 from trytond.transaction import Transaction
 from sql.operators import In
 from sql.aggregate import Max
-from .aeat import (
-    OPERATION_KEY, BOOK_KEY, SEND_SPECIAL_REGIME_KEY,
-    RECEIVE_SPECIAL_REGIME_KEY, AEAT_INVOICE_STATE, IVA_SUBJECTED,
-    EXCEMPTION_CAUSE, INTRACOMUNITARY_TYPE)
+from .aeat import (OPERATION_KEY, BOOK_KEY, SEND_SPECIAL_REGIME_KEY,
+        RECEIVE_SPECIAL_REGIME_KEY, AEAT_INVOICE_STATE, IVA_SUBJECTED,
+        EXCEMPTION_CAUSE, INTRACOMUNITARY_TYPE)
 
-__all__ = [
-    'Invoice', 'ReasignSIIRecord', 'ReasignSIIRecordStart',
-    'ReasignSIIRecordEnd'
-]
+from .pyAEATsii import mapping
 
+__all__ = ['Invoice']
 
 class Invoice:
     __metaclass__ = PoolMeta
@@ -27,33 +27,71 @@ class Invoice:
         'SII Book Key')
     sii_operation_key = fields.Selection([(None, ''), ] + OPERATION_KEY,
         'SII Operation Key')
-    sii_issued_key = fields.Selection([(None, ''),] + SEND_SPECIAL_REGIME_KEY,
+    sii_issued_key = fields.Selection([(None, ''), ] + SEND_SPECIAL_REGIME_KEY,
         'SII Issued Key',
         states={
             'invisible': ~Eval('type').in_(['out_invoice', 'out_credit_note']),
         })
-    sii_received_key = fields.Selection([(None, ''),] +
+    sii_received_key = fields.Selection([(None, ''), ] +
         RECEIVE_SPECIAL_REGIME_KEY, 'SII Recived Key',
         states={
             'invisible': Eval('type').in_(['out_invoice', 'out_credit_note']),
         })
-    sii_subjected = fields.Selection([(None, '')]+ IVA_SUBJECTED, 'Subjected')
-    sii_excemtion_cause = fields.Selection([(None, '')] + EXCEMPTION_CAUSE,
+    sii_subjected = fields.Selection([(None, '')] + IVA_SUBJECTED, 'Subjected')
+    sii_excemption_cause = fields.Selection([(None, '')] + EXCEMPTION_CAUSE,
         'Excemption Cause')
-    sii_intracomunity_key = fields.Selection([(None, ''),] + INTRACOMUNITARY_TYPE,
-        'SII Intracommunity Key',
-        # TODO
-        # states={
-        #     'invisible': ~Eval('type').in_(['out_invoice', 'out_credit_note']),
-        # }
-        )
-
-
+    sii_intracomunity_key = fields.Selection([(None, ''), ] +
+        INTRACOMUNITARY_TYPE, 'SII Intracommunity Key',
+        states={
+            'invisible': ~Eval('sii_book_key').in_(['U']),
+        }
+    )
     sii_records = fields.One2Many('aeat.sii.report.lines', 'invoice',
         "Sii Report Lines")
     sii_state = fields.Function(fields.Selection(AEAT_INVOICE_STATE,
             'SII State'), 'get_sii_state', searcher='search_sii_state')
 
+    @classmethod
+    def __setup__(cls):
+        super(Invoice, cls).__setup__()
+        cls._check_modify_exclude += ['sii_book_key', 'sii_operation_key',
+            'sii_received_key', 'sii_subjected', 'sii_subjected',
+            'sii_excemption_cause', 'sii_intracomunity_key',
+            'sii_intracomunity_key']
+
+    @staticmethod
+    def default_sii_book_key():
+        type_ = Transaction().context.get('type', 'out_invoice')
+        book_key = 'E'
+        if type_ and type_ == 'in_invoice':
+            book_key = 'R'
+
+        return book_key
+
+    @staticmethod
+    def default_sii_subjected():
+        return 'S1'
+
+    @staticmethod
+    def default_sii_issued_key():
+        type_ = Transaction().context.get('type', 'out_invoice')
+        if type_ == 'out_invoice':
+            return '01'
+        return 'None'
+
+    @staticmethod
+    def default_sii_received_key():
+        type_ = Transaction().context.get('type', 'ou_invoice')
+        if type_ == 'in_invoice':
+            return '01'
+        return 'None'
+
+    @staticmethod
+    def default_sii_operation_key():
+        type_ = Transaction().context.get('type', 'ou_invoice')
+        if type_ in ('in_credit_note', 'out_credit_note'):
+            return 'R1'
+        return 'F1'
 
     @classmethod
     def search_sii_state(cls, name, clause):
@@ -83,8 +121,6 @@ class Invoice:
         res_lines = SIILines.search(clause2)
         return [('id', 'in', [x.invoice.id for x in res_lines])]
 
-
-
     @classmethod
     def get_sii_state(cls, invoices, names):
         pool = Pool()
@@ -111,65 +147,3 @@ class Invoice:
         return result
 
 
-class ReasignSIIRecordStart(ModelView):
-    """
-    Reasign AEAT SII Records Start
-    """
-    __name__ = "aeat.sii.reasign.records.start"
-
-    book_key = fields.Selection(BOOK_KEY, 'Book Key', sort=False)
-    operation_key = fields.Selection(OPERATION_KEY, 'Operation Key', sort=False)
-
-
-class ReasignSIIRecordEnd(ModelView):
-    """
-    Reasign AEAT SII Records End
-    """
-    __name__ = "aeat.sii.reasign.records.end"
-
-
-class ReasignSIIRecord(Wizard):
-    """
-    Reasign AEAT SII Records
-    """
-    __name__ = "aeat.sii.reasign.records"
-    start = StateView('aeat.sii.reasign.records.start',
-        'aeat_sii.aeat_sii_reasign_start_view', [
-            Button('Cancel', 'end', 'tryton-cancel'),
-            Button('Reasign', 'reasign', 'tryton-ok', default=True),
-            ])
-    reasign = StateTransition()
-    done = StateView('aeat.sii.reasign.records.end',
-        'aeat_sii.aeat_sii_reasign_end_view', [
-            Button('Ok', 'end', 'tryton-ok', default=True),
-            ])
-
-    @classmethod
-    def __setup__(cls):
-        super(ReasignSIIRecord, cls).__setup__()
-        cls._error_messages.update({
-                'sii_book_key_not_available': (
-                    'The AEAT Sii Book Key "%s" is not available for any of '
-                    'selected invoices.'),
-                })
-
-    def transition_reasign(self):
-        Invoice = Pool().get('account.invoice')
-        Line = Pool().get('account.invoice.line')
-        cursor = Transaction().cursor
-        invoices = Invoice.browse(Transaction().context['active_ids'])
-
-        invoice = Invoice.__table__()
-
-        value = self.start.book_key
-        value2 = self.start.operation_key
-        # Update to allow to modify key for posted invoices
-        cursor.execute(*invoice.update(columns=[invoice.sii_book_key,
-            invoice.sii_operation_key],
-            values=[value, value2], where=In(invoice.id,
-                [x.id for x in invoices])))
-
-        # invoices = Invoice.browse(invoices)
-        # Invoice.create_aeat340_records(invoices)
-
-        return 'done'
