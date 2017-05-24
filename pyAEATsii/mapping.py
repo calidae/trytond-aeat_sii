@@ -2,7 +2,10 @@
 __all__ = [
     'get_headers',
     'OutInvoiceMapper',
+    'RecievedInvoiceMapper',
 ]
+
+_DATE_FMT = '%d-%m-%Y'
 
 
 def get_headers(name=None, vat=None, comm_kind=None, version='0.7'):
@@ -46,7 +49,7 @@ class OutInvoiceMapper(object):
             },
             'NumSerieFacturaEmisor': cls.serial_number(invoice),
             'FechaExpedicionFacturaEmisor':
-                cls.issue_date(invoice).strftime('%d/%m/%Y'),
+                cls.issue_date(invoice).strftime(_DATE_FMT),
         }
 
     @classmethod
@@ -107,4 +110,84 @@ class OutInvoiceMapper(object):
             'BaseImponible': cls.tax_base(tax),
             'CuotaRepercutida': cls.tax_amount(tax),
             # TODO: TipoRecargoEquivalencia, CuotaRecargoEquivalencia
+        }
+
+
+class RecievedInvoiceMapper(object):
+
+    @classmethod
+    def build_delete_request(cls, invoice):
+        return {
+            'PeriodoImpositivo': cls.build_period(invoice),
+            'IDFactura': cls.build_invoice_id(invoice),
+        }
+
+    @classmethod
+    def build_submit_request(cls, invoice):
+        request = cls.build_delete_request(invoice)
+        request['FacturaRecibida'] = cls.build_invoice(invoice)
+        return request
+
+    @classmethod
+    def build_period(cls, invoice):
+        return {
+            'Ejercicio': cls.year(invoice),
+            'Periodo': str(cls.period(invoice)).zfill(2),
+        }
+
+    @classmethod
+    def build_invoice_id(cls, invoice):
+        return {
+            'IDEmisorFactura': {
+                'NIF': cls.counterpart_nif(invoice),
+            },
+            'NumSerieFacturaEmisor': cls.serial_number(invoice),
+            'FechaExpedicionFacturaEmisor':
+                cls.issue_date(invoice).strftime(_DATE_FMT),
+        }
+
+    @classmethod
+    def build_invoice(cls, invoice):
+        ret = {
+            'TipoFactura': cls.invoice_kind(invoice),
+            'ClaveRegimenEspecialOTrascendencia':
+                cls.specialkey_or_trascendence(invoice),
+            'DescripcionOperacion': cls.description(invoice),
+            'DesgloseFactura': {
+                # 'InversionSujetoPasivo': {
+                #     'DetalleIVA':
+                #         map(cls.build_taxes, cls.taxes(invoice)),
+                # },
+                'DesgloseIVA': {
+                    'DetalleIVA':
+                        map(cls.build_taxes, cls.taxes(invoice)),
+                }
+            },
+            'FechaRegContable': cls.move_date(invoice).strftime(_DATE_FMT),
+            'CuotaDeducible': cls.deductible_amount(invoice),
+        }
+        if ret['TipoFactura'] not in {'F2', 'F4', 'R5'}:
+            ret['Contraparte'] = cls.build_counterpart(invoice)
+        return ret
+
+    @classmethod
+    def build_counterpart(cls, invoice):
+        return {
+            'NombreRazon': cls.counterpart_name(invoice),
+            'NIF': cls.counterpart_nif(invoice),
+            # 'IDOtro': {
+            #     'IDType': cls.counterpart_id_type(invoice),
+            #     'CodigoPais': cls.counterpart_country(invoice),
+            #     # 'ID': cls.counterpart_nif(invoice),
+            # },
+        }
+
+    @classmethod
+    def build_taxes(cls, tax):
+        return {
+            'TipoImpositivo': int(100 * cls.tax_rate(tax)),
+            'BaseImponible': cls.tax_base(tax),
+            'CuotaSoportada': cls.tax_amount(tax),
+            # TODO: TipoRecargoEquivalencia, CuotaRecargoEquivalencia
+            # TODO: PorcentCompensacionREAGYP, ImporteCompensacionREAGYP
         }

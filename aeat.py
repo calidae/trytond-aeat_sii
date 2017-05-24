@@ -362,6 +362,11 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                     report.delete_issued_invoices()
                 else:
                     raise NotImplementedError
+            elif report.book == 'R':
+                if report.operation_type in {'A0', 'A1'}:
+                    report.submit_recieved_invoices()
+                else:
+                    raise NotImplementedError
             else:
                 raise NotImplementedError
         _logger.debug('Done sending reports to AEAT SII')
@@ -411,7 +416,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             (line.invoice for line in self.lines))
         res = None
         with self.company.tmp_ssl_credentials() as (crt, key):
-            srv = service.bind_SuministroFactEmitidas(crt, key, test=True)
+            srv = service.bind_issued_invoices_service(crt, key, test=True)
             res = srv.SuministroLRFacturasEmitidas(headers, invoices)
         # TODO: assert response order matches report order
         for (report_line, response_line) in zip(
@@ -436,7 +441,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             (line.invoice for line in self.lines))
         res = None
         with self.company.tmp_ssl_credentials() as (crt, key):
-            srv = service.bind_SuministroFactEmitidas(crt, key, test=True)
+            srv = service.bind_issued_invoices_service(crt, key, test=True)
             res = srv.AnulacionLRFacturasEmitidas(headers, invoices)
         # TODO: assert response order matches report order
         for (report_line, response_line) in zip(
@@ -470,7 +475,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             # EstadoCuadre, ClavePaginacion
         }
         with self.company.tmp_ssl_credentials() as (crt, key):
-            srv = service.bind_SuministroFactEmitidas(
+            srv = service.bind_issued_invoices_service(
                 crt, key, test=True)
             res = srv.ConsultaLRFacturasEmitidas(
                 headers, filter_)
@@ -506,6 +511,34 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             'lines': [('create', lines_to_create)]
         })
 
+    def submit_recieved_invoices(self):
+        _logger.info('Sending report %s to AEAT SII', self.id)
+        headers = mapping.get_headers(
+            name=self.company.party.name,
+            vat=self.company.party.vat_number,
+            comm_kind=self.operation_type)
+        invoices = map(
+            RecievedTrytonInvoiceMapper.build_submit_request,
+            (line.invoice for line in self.lines))
+        res = None
+        _logger.debug(invoices)
+        with self.company.tmp_ssl_credentials() as (crt, key):
+            srv = service.bind_recieved_invoices_service(crt, key, test=True)
+            res = srv.SuministroLRFacturasRecibidas(headers, invoices)
+        _logger.debug(res)
+        # TODO: assert response order matches report order
+        for (report_line, response_line) in zip(
+                self.lines, res.RespuestaLinea):
+            report_line.write([report_line], {
+                'state': response_line.EstadoRegistro,
+                'communication_code': response_line.CodigoErrorRegistro,
+                'communication_msg': response_line.DescripcionErrorRegistro,
+            })
+        self.write([self], {
+            'communication_state': res.EstadoEnvio,
+            'csv': res.CSV,
+        })
+
 
 class IssuedTrytonInvoiceMapper(mapping.OutInvoiceMapper):
     year = attrgetter('move.period.fiscalyear.name')
@@ -521,6 +554,28 @@ class IssuedTrytonInvoiceMapper(mapping.OutInvoiceMapper):
     counterpart_nif = attrgetter('party.vat_number')
     counterpart_id_type = attrgetter('party.identifier_type')
     counterpart_country = attrgetter('party.vat_country')
+    taxes = attrgetter('taxes')
+    tax_rate = attrgetter('tax.rate')
+    tax_base = attrgetter('base')
+    tax_amount = attrgetter('amount')
+
+
+class RecievedTrytonInvoiceMapper(mapping.RecievedInvoiceMapper):
+    year = attrgetter('move.period.fiscalyear.name')
+    period = attrgetter('move.period.start_date.month')
+    nif = attrgetter('company.party.vat_number')
+    serial_number = attrgetter('reference')
+    issue_date = attrgetter('invoice_date')
+    invoice_kind = attrgetter('sii_operation_key')
+    specialkey_or_trascendence = attrgetter('sii_received_key')
+    description = attrgetter('description')
+    not_exempt_kind = attrgetter('sii_subjected')
+    counterpart_name = attrgetter('party.name')
+    counterpart_nif = attrgetter('party.vat_number')
+    counterpart_id_type = attrgetter('party.identifier_type')
+    counterpart_country = attrgetter('party.vat_country')
+    move_date = attrgetter('move.date')
+    deductible_amount = attrgetter('tax_amount')  # most of the times
     taxes = attrgetter('taxes')
     tax_rate = attrgetter('tax.rate')
     tax_base = attrgetter('base')

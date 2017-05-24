@@ -1,6 +1,7 @@
 
 __all__ = [
-    'bind_SuministroFactEmitidas',
+    'bind_issued_invoices_service',
+    'bind_recieved_invoices_service',
 ]
 
 from requests import Session
@@ -25,7 +26,7 @@ def _get_client(wsdl, public_crt, private_key, test=False):
     return client
 
 
-def bind_SuministroFactEmitidas(crt, pkey, test=False):
+def bind_issued_invoices_service(crt, pkey, test=False):
     wsdl = (
         'http://www.agenciatributaria.es/static_files/AEAT/'
         'Contenidos_Comunes/La_Agencia_Tributaria/Modelos_y_formularios/'
@@ -39,9 +40,17 @@ def bind_SuministroFactEmitidas(crt, pkey, test=False):
     service = cli.bind('siiService', port_name)
     return service
 
-    # wsdl_in = fields.Char(
-    #     string='WSDL Invoice In', required=True,
-    #     default='http://www.agenciatributaria.es/static_files/AEAT/'
-    #     'Contenidos_Comunes/La_Agencia_Tributaria/Modelos_y_formularios/'
-    #     'Suministro_inmediato_informacion/FicherosSuministros/V_06/'
-    #     'SuministroFactRecibidas.wsdl')
+
+def bind_recieved_invoices_service(crt, pkey, test=False):
+    wsdl = (
+        'http://www.agenciatributaria.es/static_files/AEAT/'
+        'Contenidos_Comunes/La_Agencia_Tributaria/Modelos_y_formularios/'
+        'Suministro_inmediato_informacion/FicherosSuministros/V_07/'
+        'SuministroFactRecibidas.wsdl'
+    )
+    port_name = 'SuministroFactRecibidas'
+    if test:
+        port_name += 'Pruebas'
+    cli = _get_client(wsdl, crt, pkey, test)
+    service = cli.bind('siiService', port_name)
+    return service
