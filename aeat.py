@@ -123,6 +123,7 @@ AEAT_COMMUNICATION_STATE = [
 AEAT_INVOICE_STATE = [
     (None, ''),
     ('Correcto', 'Accepted'),
+    ('Correcta', 'Accepted'),  # You guys are disgusting
     ('AceptadoConErrores', 'Accepted with Errors'),
     ('AceptadaConErrores', 'Accepted with Errors'),  # Shame on AEAT
     ('Anulada', 'Deleted'),
@@ -365,6 +366,8 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             elif report.book == 'R':
                 if report.operation_type in {'A0', 'A1'}:
                     report.submit_recieved_invoices()
+                elif report.operation_type == 'C0':
+                    report.query_recieved_invoices()
                 else:
                     raise NotImplementedError
             else:
@@ -482,6 +485,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
 
         registers = \
             res.RegistroRespuestaConsultaLRFacturasEmitidas
+        # FIXME: the number can be repeated over time
         invoices_list = Invoice.search([
             ('number', 'in', [
                 reg.IDFactura.NumSerieFacturaEmisor
@@ -537,6 +541,63 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         self.write([self], {
             'communication_state': res.EstadoEnvio,
             'csv': res.CSV,
+        })
+
+    def query_recieved_invoices(self):
+        res = None
+        pool = Pool()
+        Invoice = pool.get('account.invoice')
+        headers = mapping.get_headers(
+            name=self.company.party.name,
+            vat=self.company.party.vat_number,
+            comm_kind=self.operation_type)
+        filter_ = {
+            'PeriodoImpositivo': {
+                'Ejercicio': self.fiscalyear.name,
+                'Periodo': str(
+                    self.period.start_date.month).zfill(2),
+            }
+            # TODO: IDFactura, Contraparte,
+            # FechaPresentacion, FacturaModificada,
+            # EstadoCuadre, ClavePaginacion
+        }
+        with self.company.tmp_ssl_credentials() as (crt, key):
+            srv = service.bind_recieved_invoices_service(
+                crt, key, test=True)
+            res = srv.ConsultaLRFacturasRecibidas(
+                headers, filter_)
+
+        _logger.debug(res)
+        registers = \
+            res.RegistroRespuestaConsultaLRFacturasRecibidas
+        # FIXME: the reference is not forced to be unique
+        invoices_list = Invoice.search([
+            ('reference', 'in', [
+                reg.IDFactura.NumSerieFacturaEmisor
+                for reg in registers
+            ])
+        ])
+        invoices_ids = {
+            invoice.reference: invoice.id
+            for invoice in invoices_list
+        }
+        lines_to_create = [
+            {
+                'invoice':
+                    invoices_ids.get(
+                        reg.IDFactura.NumSerieFacturaEmisor),
+                'state':
+                    reg.EstadoFactura.EstadoRegistro,
+                'communication_code':
+                    reg.EstadoFactura.CodigoErrorRegistro,
+                'communication_msg':
+                    reg.EstadoFactura.DescripcionErrorRegistro,
+                # FIXME: store any other info from the response
+            }
+            for reg in registers
+        ]
+        self.write([self], {
+            'lines': [('create', lines_to_create)]
         })
 
 
