@@ -368,6 +368,8 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                     report.submit_recieved_invoices()
                 elif report.operation_type == 'C0':
                     report.query_recieved_invoices()
+                elif report.operation_type == 'D0':
+                    report.delete_recieved_invoices()
                 else:
                     raise NotImplementedError
             else:
@@ -530,6 +532,31 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             srv = service.bind_recieved_invoices_service(crt, key, test=True)
             res = srv.SuministroLRFacturasRecibidas(headers, invoices)
         _logger.debug(res)
+        # TODO: assert response order matches report order
+        for (report_line, response_line) in zip(
+                self.lines, res.RespuestaLinea):
+            report_line.write([report_line], {
+                'state': response_line.EstadoRegistro,
+                'communication_code': response_line.CodigoErrorRegistro,
+                'communication_msg': response_line.DescripcionErrorRegistro,
+            })
+        self.write([self], {
+            'communication_state': res.EstadoEnvio,
+            'csv': res.CSV,
+        })
+
+    def delete_recieved_invoices(self):
+        headers = mapping.get_headers(
+            name=self.company.party.name,
+            vat=self.company.party.vat_number,
+            comm_kind=self.operation_type)
+        invoices = map(
+            RecievedTrytonInvoiceMapper.build_delete_request,
+            (line.invoice for line in self.lines))
+        res = None
+        with self.company.tmp_ssl_credentials() as (crt, key):
+            srv = service.bind_recieved_invoices_service(crt, key, test=True)
+            res = srv.AnulacionLRFacturasRecibidas(headers, invoices)
         # TODO: assert response order matches report order
         for (report_line, response_line) in zip(
                 self.lines, res.RespuestaLinea):

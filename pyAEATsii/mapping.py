@@ -119,14 +119,16 @@ class RecievedInvoiceMapper(object):
     def build_delete_request(cls, invoice):
         return {
             'PeriodoImpositivo': cls.build_period(invoice),
-            'IDFactura': cls.build_invoice_id(invoice),
+            'IDFactura': cls.build_named_invoice_id(invoice),
         }
 
     @classmethod
     def build_submit_request(cls, invoice):
-        request = cls.build_delete_request(invoice)
-        request['FacturaRecibida'] = cls.build_invoice(invoice)
-        return request
+        return {
+            'PeriodoImpositivo': cls.build_period(invoice),
+            'IDFactura': cls.build_invoice_id(invoice),
+            'FacturaRecibida': cls.build_invoice(invoice),
+        }
 
     @classmethod
     def build_period(cls, invoice):
@@ -139,6 +141,19 @@ class RecievedInvoiceMapper(object):
     def build_invoice_id(cls, invoice):
         return {
             'IDEmisorFactura': {
+                'NIF': cls.counterpart_nif(invoice),
+            },
+            'NumSerieFacturaEmisor': cls.serial_number(invoice),
+            # TODO: NumSerieFacturaEmisorResumenFin
+            'FechaExpedicionFacturaEmisor':
+                cls.issue_date(invoice).strftime(_DATE_FMT),
+        }
+
+    @classmethod
+    def build_named_invoice_id(cls, invoice):
+        return {
+            'IDEmisorFactura': {
+                'NombreRazon': cls.counterpart_name(invoice),
                 'NIF': cls.counterpart_nif(invoice),
             },
             'NumSerieFacturaEmisor': cls.serial_number(invoice),
