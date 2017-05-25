@@ -91,7 +91,16 @@ class _IssuedInvoiceService(object):
         _logger.debug(response_)
         return response_
 
-    def query(self, headers, filter_):
+    def query(self, headers, year=None, period=None):
+        filter_ = {
+            'PeriodoImpositivo': {
+                'Ejercicio': year,
+                'Periodo': str(period).zfill(2),
+            }
+            # TODO: IDFactura, Contraparte,
+            # FechaPresentacion, FacturaModificada,
+            # EstadoCuadre, ClavePaginacion
+        }
         _logger.debug(filter_)
         response_ = self.service.ConsultaLRFacturasEmitidas(
             headers, filter_)
@@ -127,7 +136,16 @@ class _RecievedInvoiceService(object):
         _logger.debug(response_)
         return response_
 
-    def query(self, headers, filter_):
+    def query(self, headers, year=None, period=None):
+        filter_ = {
+            'PeriodoImpositivo': {
+                'Ejercicio': year,
+                'Periodo': str(period).zfill(2),
+            }
+            # TODO: IDFactura,
+            # FechaPresentacion, FacturaModificada,
+            # EstadoCuadre, ClavePaginacion
+        }
         _logger.debug(filter_)
         response_ = self.service.ConsultaLRFacturasRecibidas(
             headers, filter_)

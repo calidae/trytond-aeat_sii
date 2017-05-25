@@ -29,6 +29,29 @@ class IssuedTestInvoiceMapper(mapping.IssuedInvoiceMapper):
         tax_amount = methodcaller('get', 'tax_amount')
 
 
+class RecievedTestInvoiceMapper(mapping.RecievedInvoiceMapper):
+        year = methodcaller('get', 'year')
+        period = methodcaller('get', 'period')
+        nif = methodcaller('get', 'nif')
+        serial_number = methodcaller('get', 'serial_number')
+        issue_date = methodcaller('get', 'issue_date')
+        invoice_kind = methodcaller('get', 'invoice_kind')
+        rectified_invoice_kind = methodcaller('get', 'rectified_invoice_kind')
+        rectified_base = methodcaller('get', 'rectified_base')
+        rectified_amount = methodcaller('get', 'rectified_amount')
+        total_amount = methodcaller('get', 'total_amount')
+        specialkey_or_trascendence = methodcaller('get', 'specialkey_or_trascendence')
+        description = methodcaller('get', 'description')
+        not_exempt_kind = methodcaller('get', 'not_exempt_kind')
+        counterpart_name = methodcaller('get', 'counterpart_name')
+        counterpart_nif = methodcaller('get', 'counterpart_nif')
+        counterpart_id_type = methodcaller('get', 'counterpart_id_type')
+        counterpart_country = methodcaller('get', 'counterpart_country')
+        taxes = methodcaller('get', 'taxes')
+        tax_rate = methodcaller('get', 'tax_rate')
+        tax_base = methodcaller('get', 'tax_base')
+        tax_amount = methodcaller('get', 'tax_amount')
+
 
 def test_issued_invoice_mapping():
     invoice = {
@@ -102,6 +125,7 @@ def test_rectified_issued_invoice_mapping():
     assert request_['FacturaExpedida']['ImporteRectificacion']['BaseRectificada'] == 100
     assert request_['FacturaExpedida']['ImporteRectificacion']['CuotaRectificada'] == 200
 
+
 def test_rectified_by_difference_issued_invoice_mapping():
     invoice = {
         'year': 2017,
@@ -133,6 +157,7 @@ def test_rectified_by_difference_issued_invoice_mapping():
 
     assert request_['FacturaExpedida']['TipoRectificativa'] == 'I'
     assert 'ImporteRectificacion' not in request_['FacturaExpedida']
+
 
 def test_rectified_simplified_issued_invoice_with_1_line_mapping():
     invoice = {

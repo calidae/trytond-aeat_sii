@@ -471,20 +471,14 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             name=self.company.party.name,
             vat=self.company.party.vat_number,
             comm_kind=self.operation_type)
-        filter_ = {
-            'PeriodoImpositivo': {
-                'Ejercicio': self.fiscalyear.name,
-                'Periodo': str(
-                    self.period.start_date.month).zfill(2),
-            }
-            # TODO: IDFactura, Contraparte,
-            # FechaPresentacion, FacturaModificada,
-            # EstadoCuadre, ClavePaginacion
-        }
+
         with self.company.tmp_ssl_credentials() as (crt, key):
             srv = service.bind_issued_invoices_service(
                 crt, key, test=True)
-            res = srv.query(headers, filter_)
+            res = srv.query(
+                headers,
+                year=self.fiscalyear.name,
+                period=self.period.start_date.month)
 
         registers = \
             res.RegistroRespuestaConsultaLRFacturasEmitidas
@@ -579,20 +573,14 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             name=self.company.party.name,
             vat=self.company.party.vat_number,
             comm_kind=self.operation_type)
-        filter_ = {
-            'PeriodoImpositivo': {
-                'Ejercicio': self.fiscalyear.name,
-                'Periodo': str(
-                    self.period.start_date.month).zfill(2),
-            }
-            # TODO: IDFactura,
-            # FechaPresentacion, FacturaModificada,
-            # EstadoCuadre, ClavePaginacion
-        }
+
         with self.company.tmp_ssl_credentials() as (crt, key):
             srv = service.bind_recieved_invoices_service(
                 crt, key, test=True)
-            res = srv.query(headers, filter_)
+            res = srv.query(
+                headers,
+                year=self.fiscalyear.name,
+                period=self.period.start_date.month)
 
         _logger.debug(res)
         registers = \
