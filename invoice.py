@@ -81,14 +81,14 @@ class Invoice:
 
     @staticmethod
     def default_sii_received_key():
-        type_ = Transaction().context.get('type', 'ou_invoice')
+        type_ = Transaction().context.get('type', 'out_invoice')
         if type_ == 'in_invoice':
             return '01'
         return 'None'
 
     @staticmethod
     def default_sii_operation_key():
-        type_ = Transaction().context.get('type', 'ou_invoice')
+        type_ = Transaction().context.get('type', 'out_invoice')
         if type_ in ('in_credit_note', 'out_credit_note'):
             return 'R1'
         return 'F1'
@@ -145,5 +145,3 @@ class Invoice:
                 result['sii_state'][inv] = state
 
         return result
-
-
