@@ -14,32 +14,6 @@
           <field name="inherit" ref="account_invoice.invoice_view_tree"/>
           <field name="name">account_invoice_list</field>
       </record>
-
-      <!-- <record model="ir.ui.view" id="aeat_sii_reasign_start_view">
-          <field name="model">aeat.sii.reasign.records.start</field>
-          <field name="type">form</field>
-          <field name="name">reasign_start</field>
-      </record>
-      <record model="ir.ui.view" id="aeat_sii_reasign_end_view">
-          <field name="model">aeat.sii.reasign.records.end</field>
-          <field name="type">form</field>
-          <field name="name">reasign_end</field>
-      </record>
-
-      <record model="ir.action.wizard" id="act_aeat_sii_reasign">
-          <field name="name">Reasign AEAT SII Records</field>
-          <field name="wiz_name">aeat.sii.reasign.records</field>
-      </record>
-      <record model="ir.action.keyword" id="act_aeat_sii_reasign_keyword1">
-          <field name="action" ref="act_aeat_sii_reasign"/>
-          <field name="keyword">form_action</field>
-          <field name="model">account.invoice,-1</field>
-      </record>
-      <record model="ir.action-res.group"
-          id="act_reasign-group_aeatsii">
-          <field name="action" ref="act_aeat_sii_reasign"/>
-          <field name="group" ref="group_aeat_sii_admin"/>
-      </record> -->
     </data>
 
 </tryton>
