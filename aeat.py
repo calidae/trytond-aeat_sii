@@ -650,6 +650,10 @@ class RecievedTrytonInvoiceMapper(mapping.RecievedInvoiceMapper):
     serial_number = attrgetter('reference')
     issue_date = attrgetter('invoice_date')
     invoice_kind = attrgetter('sii_operation_key')
+
+    @classmethod
+    def rectified_invoice_kind(cls, invoice):
+        return 'I'
     specialkey_or_trascendence = attrgetter('sii_received_key')
     description = attrgetter('description')
     not_exempt_kind = attrgetter('sii_subjected')
