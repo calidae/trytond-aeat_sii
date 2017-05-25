@@ -584,7 +584,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                 'Periodo': str(
                     self.period.start_date.month).zfill(2),
             }
-            # TODO: IDFactura, Contraparte,
+            # TODO: IDFactura,
             # FechaPresentacion, FacturaModificada,
             # EstadoCuadre, ClavePaginacion
         }
@@ -628,7 +628,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         })
 
 
-class IssuedTrytonInvoiceMapper(mapping.OutInvoiceMapper):
+class IssuedTrytonInvoiceMapper(mapping.IssuedInvoiceMapper):
     year = attrgetter('move.period.fiscalyear.name')
     period = attrgetter('move.period.start_date.month')
     nif = attrgetter('company.party.vat_number')
