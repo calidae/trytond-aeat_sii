@@ -55,9 +55,8 @@ class Invoice:
     def __setup__(cls):
         super(Invoice, cls).__setup__()
         cls._check_modify_exclude += ['sii_book_key', 'sii_operation_key',
-            'sii_received_key', 'sii_subjected', 'sii_subjected',
-            'sii_excemption_cause', 'sii_intracomunity_key',
-            'sii_intracomunity_key']
+            'sii_received_key', 'sii_issued_key', 'sii_subjected',
+            'sii_excemption_cause', 'sii_intracomunity_key']
 
     @staticmethod
     def default_sii_book_key():
@@ -145,3 +144,13 @@ class Invoice:
                 result['sii_state'][inv] = state
 
         return result
+
+    def _credit(self):
+        res = super(Invoice, self)._credit()
+        for field in ('sii_book_key', 'sii_issued_key', 'sii_received_key',
+                'sii_subjected', 'sii_excemption_cause',
+                'sii_intracomunity_key'):
+            res[field] = getattr(self, field)
+
+        res['sii_operation_key'] = 'R4'
+        return res
