@@ -4,6 +4,7 @@ __all__ = [
     'build_query_filter',
     'IssuedInvoiceMapper',
     'RecievedInvoiceMapper',
+    'hardcode',
 ]
 
 _DATE_FMT = '%d-%m-%Y'
@@ -35,6 +36,19 @@ def get_headers(name=None, vat=None, comm_kind=None, version='0.7'):
         },
         'TipoComunicacion': comm_kind,
     }
+
+
+class _HardcodedValue(object):
+
+    def __init__(self, value):
+        self.value = value
+
+    def __call__(self, *args, **kwargs):
+        return self.value
+
+
+def hardcode(value):
+    return _HardcodedValue(value)
 
 
 class IssuedInvoiceMapper(object):
