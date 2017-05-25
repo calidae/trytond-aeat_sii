@@ -1,11 +1,28 @@
 
 __all__ = [
     'get_headers',
+    'build_query_filter',
     'IssuedInvoiceMapper',
     'RecievedInvoiceMapper',
 ]
 
 _DATE_FMT = '%d-%m-%Y'
+
+
+def _format_period(period):
+    return str(period).zfill(2)
+
+
+def build_query_filter(year=None, period=None):
+    return {
+        'PeriodoImpositivo': {
+            'Ejercicio': year,
+            'Periodo': _format_period(period),
+        }
+        # TODO: IDFactura, Contraparte,
+        # FechaPresentacion, FacturaModificada,
+        # EstadoCuadre, ClavePaginacion
+    }
 
 
 def get_headers(name=None, vat=None, comm_kind=None, version='0.7'):
@@ -39,7 +56,7 @@ class IssuedInvoiceMapper(object):
     def build_period(cls, invoice):
         return {
             'Ejercicio': cls.year(invoice),
-            'Periodo': str(cls.period(invoice)).zfill(2),
+            'Periodo': _format_period(cls.period(invoice)),
         }
 
     @classmethod
@@ -181,7 +198,7 @@ class RecievedInvoiceMapper(object):
     def build_period(cls, invoice):
         return {
             'Ejercicio': cls.year(invoice),
-            'Periodo': str(cls.period(invoice)).zfill(2),
+            'Periodo': _format_period(cls.period(invoice)),
         }
 
     @classmethod
@@ -213,11 +230,7 @@ class RecievedInvoiceMapper(object):
     def build_invoice(cls, invoice):
         ret = {
             'TipoFactura': cls.invoice_kind(invoice),
-            # TODO: TipoRectificativa
             # TODO: FacturasAgrupadas: {IDFacturaAgrupada: [{Num, Fecha}]}
-            # TODO: FacturasRectificadas:{IDFacturaRectificada:[{Num, Fecha}]}
-            # TODO: ImporteRectificacion: {
-            #   BaseRectificada, CuotaRectificada, CuotaRecargoRectificado }
             # TODO: FechaOperacion
             'ClaveRegimenEspecialOTrascendencia':
                 cls.specialkey_or_trascendence(invoice),
@@ -241,7 +254,16 @@ class RecievedInvoiceMapper(object):
             'FechaRegContable': cls.move_date(invoice).strftime(_DATE_FMT),
             'CuotaDeducible': cls.deductible_amount(invoice),
         }
+        cls._update_rectified_invoice(ret, invoice)
         return ret
+
+    @classmethod
+    def _update_rectified_invoice(cls, ret, invoice):
+        if ret['TipoFactura'] in {'R1', 'R2', 'R3', 'R4', 'R5'}:
+            ret['TipoRectificativa'] = cls.rectified_invoice_kind(invoice)
+            # TODO: FacturasRectificadas:{IDFacturaRectificada:[{Num, Fecha}]}
+            # TODO: ImporteRectificacion: {
+            #   BaseRectificada, CuotaRectificada, CuotaRecargoRectificado }
 
     @classmethod
     def build_counterpart(cls, invoice):

@@ -25,3 +25,6 @@ class LoggingPlugin(Plugin):
         _logger.debug('envelope: %s', etree.tostring(
             envelope, pretty_print=True))
         return envelope, http_headers
+
+
+# TODO: JSESSIONID Plugin

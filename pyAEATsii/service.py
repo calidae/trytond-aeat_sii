@@ -12,6 +12,7 @@ from zeep.transports import Transport
 from zeep.plugins import HistoryPlugin
 
 from .plugins import LoggingPlugin
+from .mapping import build_query_filter
 
 _logger = getLogger(__name__)
 
@@ -92,15 +93,7 @@ class _IssuedInvoiceService(object):
         return response_
 
     def query(self, headers, year=None, period=None):
-        filter_ = {
-            'PeriodoImpositivo': {
-                'Ejercicio': year,
-                'Periodo': str(period).zfill(2),
-            }
-            # TODO: IDFactura, Contraparte,
-            # FechaPresentacion, FacturaModificada,
-            # EstadoCuadre, ClavePaginacion
-        }
+        filter_ = build_query_filter(year=year, period=period)
         _logger.debug(filter_)
         response_ = self.service.ConsultaLRFacturasEmitidas(
             headers, filter_)
@@ -137,15 +130,7 @@ class _RecievedInvoiceService(object):
         return response_
 
     def query(self, headers, year=None, period=None):
-        filter_ = {
-            'PeriodoImpositivo': {
-                'Ejercicio': year,
-                'Periodo': str(period).zfill(2),
-            }
-            # TODO: IDFactura,
-            # FechaPresentacion, FacturaModificada,
-            # EstadoCuadre, ClavePaginacion
-        }
+        filter_ = build_query_filter(year=year, period=period)
         _logger.debug(filter_)
         response_ = self.service.ConsultaLRFacturasRecibidas(
             headers, filter_)
