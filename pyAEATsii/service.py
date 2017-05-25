@@ -4,6 +4,7 @@ __all__ = [
     'bind_recieved_invoices_service',
 ]
 
+from logging import getLogger
 from requests import Session
 
 from zeep import Client
@@ -11,6 +12,8 @@ from zeep.transports import Transport
 from zeep.plugins import HistoryPlugin
 
 from .plugins import LoggingPlugin
+
+_logger = getLogger(__name__)
 
 
 def _get_client(wsdl, public_crt, private_key, test=False):
@@ -36,9 +39,11 @@ def bind_issued_invoices_service(crt, pkey, test=False):
     port_name = 'SuministroFactEmitidas'
     if test:
         port_name += 'Pruebas'
+
     cli = _get_client(wsdl, crt, pkey, test)
-    service = cli.bind('siiService', port_name)
-    return service
+
+    return _IssuedInvoiceService(
+        cli.bind('siiService', port_name))
 
 
 def bind_recieved_invoices_service(crt, pkey, test=False):
@@ -51,6 +56,80 @@ def bind_recieved_invoices_service(crt, pkey, test=False):
     port_name = 'SuministroFactRecibidas'
     if test:
         port_name += 'Pruebas'
+
     cli = _get_client(wsdl, crt, pkey, test)
-    service = cli.bind('siiService', port_name)
-    return service
+
+    return _RecievedInvoiceService(
+        cli.bind('siiService', port_name))
+
+
+class _IssuedInvoiceService(object):
+    def __init__(self, service):
+        self.service = service
+
+    def submit(self, headers, invoices, mapper=None):
+        body = (
+            map(mapper.build_submit_request, invoices)
+            if mapper
+            else invoices
+        )
+        _logger.debug(body)
+        response_ = self.service.SuministroLRFacturasEmitidas(
+            headers, body)
+        _logger.debug(response_)
+        return response_
+
+    def cancel(self, headers, invoices, mapper=None):
+        body = (
+            map(mapper.build_delete_request, invoices)
+            if mapper
+            else invoices
+        )
+        _logger.debug(body)
+        response_ = self.service.AnulacionLRFacturasEmitidas(
+            headers, body)
+        _logger.debug(response_)
+        return response_
+
+    def query(self, headers, filter_):
+        _logger.debug(filter_)
+        response_ = self.service.ConsultaLRFacturasEmitidas(
+            headers, filter_)
+        _logger.debug(response_)
+        return response_
+
+
+class _RecievedInvoiceService(object):
+    def __init__(self, service):
+        self.service = service
+
+    def submit(self, headers, invoices, mapper=None):
+        body = (
+            map(mapper.build_submit_request, invoices)
+            if mapper
+            else invoices
+        )
+        _logger.debug(body)
+        response_ = self.service.SuministroLRFacturasRecibidas(
+            headers, body)
+        _logger.debug(response_)
+        return response_
+
+    def cancel(self, headers, invoices, mapper=None):
+        body = (
+            map(mapper.build_delete_request, invoices)
+            if mapper
+            else invoices
+        )
+        _logger.debug(body)
+        response_ = self.service.AnulacionLRFacturasRecibidas(
+            headers, body)
+        _logger.debug(response_)
+        return response_
+
+    def query(self, headers, filter_):
+        _logger.debug(filter_)
+        response_ = self.service.ConsultaLRFacturasRecibidas(
+            headers, filter_)
+        _logger.debug(response_)
+        return response_

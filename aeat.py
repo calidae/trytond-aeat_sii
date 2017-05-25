@@ -416,13 +416,14 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             name=self.company.party.name,
             vat=self.company.party.vat_number,
             comm_kind=self.operation_type)
-        invoices = map(
-            IssuedTrytonInvoiceMapper.build_submit_request,
-            (line.invoice for line in self.lines))
+
         res = None
         with self.company.tmp_ssl_credentials() as (crt, key):
             srv = service.bind_issued_invoices_service(crt, key, test=True)
-            res = srv.SuministroLRFacturasEmitidas(headers, invoices)
+            res = srv.submit(
+                headers, (line.invoice for line in self.lines),
+                mapper=IssuedTrytonInvoiceMapper)
+
         # TODO: assert response order matches report order
         for (report_line, response_line) in zip(
                 self.lines, res.RespuestaLinea):
@@ -441,13 +442,14 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             name=self.company.party.name,
             vat=self.company.party.vat_number,
             comm_kind=self.operation_type)
-        invoices = map(
-            IssuedTrytonInvoiceMapper.build_delete_request,
-            (line.invoice for line in self.lines))
+
         res = None
         with self.company.tmp_ssl_credentials() as (crt, key):
             srv = service.bind_issued_invoices_service(crt, key, test=True)
-            res = srv.AnulacionLRFacturasEmitidas(headers, invoices)
+            res = srv.cancel(
+                headers, (line.invoice for line in self.lines),
+                mapper=IssuedTrytonInvoiceMapper)
+
         # TODO: assert response order matches report order
         for (report_line, response_line) in zip(
                 self.lines, res.RespuestaLinea):
@@ -482,8 +484,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         with self.company.tmp_ssl_credentials() as (crt, key):
             srv = service.bind_issued_invoices_service(
                 crt, key, test=True)
-            res = srv.ConsultaLRFacturasEmitidas(
-                headers, filter_)
+            res = srv.query(headers, filter_)
 
         registers = \
             res.RegistroRespuestaConsultaLRFacturasEmitidas
@@ -523,15 +524,14 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             name=self.company.party.name,
             vat=self.company.party.vat_number,
             comm_kind=self.operation_type)
-        invoices = map(
-            RecievedTrytonInvoiceMapper.build_submit_request,
-            (line.invoice for line in self.lines))
+
         res = None
-        _logger.debug(invoices)
         with self.company.tmp_ssl_credentials() as (crt, key):
             srv = service.bind_recieved_invoices_service(crt, key, test=True)
-            res = srv.SuministroLRFacturasRecibidas(headers, invoices)
-        _logger.debug(res)
+            res = srv.submit(
+                headers, (line.invoice for line in self.lines),
+                mapper=RecievedTrytonInvoiceMapper)
+
         # TODO: assert response order matches report order
         for (report_line, response_line) in zip(
                 self.lines, res.RespuestaLinea):
@@ -550,13 +550,14 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             name=self.company.party.name,
             vat=self.company.party.vat_number,
             comm_kind=self.operation_type)
-        invoices = map(
-            RecievedTrytonInvoiceMapper.build_delete_request,
-            (line.invoice for line in self.lines))
+
         res = None
         with self.company.tmp_ssl_credentials() as (crt, key):
             srv = service.bind_recieved_invoices_service(crt, key, test=True)
-            res = srv.AnulacionLRFacturasRecibidas(headers, invoices)
+            res = srv.cancel(
+                headers, (line.invoice for line in self.lines),
+                mapper=RecievedTrytonInvoiceMapper)
+
         # TODO: assert response order matches report order
         for (report_line, response_line) in zip(
                 self.lines, res.RespuestaLinea):
@@ -591,8 +592,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         with self.company.tmp_ssl_credentials() as (crt, key):
             srv = service.bind_recieved_invoices_service(
                 crt, key, test=True)
-            res = srv.ConsultaLRFacturasRecibidas(
-                headers, filter_)
+            res = srv.query(headers, filter_)
 
         _logger.debug(res)
         registers = \
