@@ -7,7 +7,10 @@ __all__ = [
     'hardcode',
 ]
 
+from sets import ImmutableSet
+
 _DATE_FMT = '%d-%m-%Y'
+RECTIFIED_KINDS = ImmutableSet({'R1', 'R2', 'R3', 'R4', 'R5'})
 
 
 def _format_period(period):
@@ -160,7 +163,7 @@ class IssuedInvoiceMapper(object):
 
     @classmethod
     def _update_rectified_invoice(cls, ret, invoice):
-        if ret['TipoFactura'] in {'R1', 'R2', 'R3', 'R4', 'R5'}:
+        if ret['TipoFactura'] in RECTIFIED_KINDS:
             ret['TipoRectificativa'] = cls.rectified_invoice_kind(invoice)
             if ret['TipoRectificativa'] == 'S':
                 ret['ImporteRectificacion'] = {
@@ -273,7 +276,7 @@ class RecievedInvoiceMapper(object):
 
     @classmethod
     def _update_rectified_invoice(cls, ret, invoice):
-        if ret['TipoFactura'] in {'R1', 'R2', 'R3', 'R4', 'R5'}:
+        if ret['TipoFactura'] in RECTIFIED_KINDS:
             ret['TipoRectificativa'] = cls.rectified_invoice_kind(invoice)
             # TODO: FacturasRectificadas:{IDFacturaRectificada:[{Num, Fecha}]}
             # TODO: ImporteRectificacion: {
