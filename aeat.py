@@ -584,7 +584,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                 'Periodo': str(
                     self.period.start_date.month).zfill(2),
             }
-            # TODO: IDFactura, Contraparte,
+            # TODO: IDFactura,
             # FechaPresentacion, FacturaModificada,
             # EstadoCuadre, ClavePaginacion
         }
@@ -628,13 +628,16 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         })
 
 
-class IssuedTrytonInvoiceMapper(mapping.OutInvoiceMapper):
+class IssuedTrytonInvoiceMapper(mapping.IssuedInvoiceMapper):
     year = attrgetter('move.period.fiscalyear.name')
     period = attrgetter('move.period.start_date.month')
     nif = attrgetter('company.party.vat_number')
     serial_number = attrgetter('number')
     issue_date = attrgetter('invoice_date')
     invoice_kind = attrgetter('sii_operation_key')
+    rectified_invoice_kind = attrgetter('rectified_invoice_kind')
+    rectified_base = attrgetter('rectified_base')
+    rectified_amount = attrgetter('rectified_amount')
     specialkey_or_trascendence = attrgetter('sii_issued_key')
     description = attrgetter('description')
     not_exempt_kind = attrgetter('sii_subjected')

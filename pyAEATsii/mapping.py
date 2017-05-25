@@ -1,7 +1,7 @@
 
 __all__ = [
     'get_headers',
-    'OutInvoiceMapper',
+    'IssuedInvoiceMapper',
     'RecievedInvoiceMapper',
 ]
 
@@ -14,12 +14,13 @@ def get_headers(name=None, vat=None, comm_kind=None, version='0.7'):
         'Titular': {
             'NombreRazon': name,
             'NIF': vat,
+            # TODO: NIFRepresentante
         },
         'TipoComunicacion': comm_kind,
     }
 
 
-class OutInvoiceMapper(object):
+class IssuedInvoiceMapper(object):
 
     @classmethod
     def build_delete_request(cls, invoice):
@@ -48,6 +49,7 @@ class OutInvoiceMapper(object):
                 'NIF': cls.nif(invoice),
             },
             'NumSerieFacturaEmisor': cls.serial_number(invoice),
+            # TODO: NumSerieFacturaEmisorResumenFinal
             'FechaExpedicionFacturaEmisor':
                 cls.issue_date(invoice).strftime(_DATE_FMT),
         }
@@ -56,9 +58,22 @@ class OutInvoiceMapper(object):
     def build_issued_invoice(cls, invoice):
         ret = {
             'TipoFactura': cls.invoice_kind(invoice),
+            # TODO: FacturasAgrupadas
+            # TODO: FacturasRectificadas
+            # TODO: FechaOperacion
             'ClaveRegimenEspecialOTrascendencia':
                 cls.specialkey_or_trascendence(invoice),
+            # TODO: ClaveRegimenEspecialOTrascendenciaAdicional1
+            # TODO: ClaveRegimenEspecialOTrascendenciaAdicional2
+            # TODO: NumRegistroAcuerdoFacturacion
+            # TODO: ImporteTotal
+            # TODO: BaseImponibleACoste
             'DescripcionOperacion': cls.description(invoice),
+            # TODO: DatosInmueble
+            # TODO: ImporteTransmisionSujetoAIVA
+            # TODO: EmitidaPorTerceros
+            # TODO: VariosDestinatarios
+            # TODO: Cupon
             'TipoDesglose': {
                 'DesgloseFactura': {
                     'Sujeta': {
@@ -87,9 +102,25 @@ class OutInvoiceMapper(object):
                 # },
             },
         }
+        cls._update_counterpart(ret, invoice)
+        cls._update_rectified_invoice(ret, invoice)
+        return ret
+
+    @classmethod
+    def _update_counterpart(cls, ret, invoice):
         if ret['TipoFactura'] not in {'F2', 'F4', 'R5'}:
             ret['Contraparte'] = cls.build_counterpart(invoice)
-        return ret
+
+    @classmethod
+    def _update_rectified_invoice(cls, ret, invoice):
+        if ret['TipoFactura'] in {'R1', 'R2', 'R3', 'R4', 'R5'}:
+            ret['TipoRectificativa'] = cls.rectified_invoice_kind(invoice)
+            if ret['TipoRectificativa'] == 'S':
+                ret['ImporteRectificacion'] = {
+                    'BaseRectificada': cls.rectified_base(invoice),
+                    'CuotaRectificada': cls.rectified_amount(invoice),
+                    # TODO: CuotaRecargoRectificado
+                }
 
     @classmethod
     def build_counterpart(cls, invoice):
@@ -142,6 +173,7 @@ class RecievedInvoiceMapper(object):
         return {
             'IDEmisorFactura': {
                 'NIF': cls.counterpart_nif(invoice),
+                # TODO: IDOtro: {CodigoPais, IDType, ID}
             },
             'NumSerieFacturaEmisor': cls.serial_number(invoice),
             # TODO: NumSerieFacturaEmisorResumenFin
@@ -165,8 +197,19 @@ class RecievedInvoiceMapper(object):
     def build_invoice(cls, invoice):
         ret = {
             'TipoFactura': cls.invoice_kind(invoice),
+            # TODO: TipoRectificativa
+            # TODO: FacturasAgrupadas: {IDFacturaAgrupada: [{Num, Fecha}]}
+            # TODO: FacturasRectificadas:{IDFacturaRectificada:[{Num, Fecha}]}
+            # TODO: ImporteRectificacion: {
+            #   BaseRectificada, CuotaRectificada, CuotaRecargoRectificado }
+            # TODO: FechaOperacion
             'ClaveRegimenEspecialOTrascendencia':
                 cls.specialkey_or_trascendence(invoice),
+            # TODO: ClaveRegimenEspecialOTrascendenciaAdicional1
+            # TODO: ClaveRegimenEspecialOTrascendenciaAdicional2
+            # TODO: NumRegistroAcuerdoFacturacion
+            # TODO: ImporteTotal
+            # TODO: BaseImponibleACoste
             'DescripcionOperacion': cls.description(invoice),
             'DesgloseFactura': {
                 # 'InversionSujetoPasivo': {
@@ -178,11 +221,10 @@ class RecievedInvoiceMapper(object):
                         map(cls.build_taxes, cls.taxes(invoice)),
                 }
             },
+            'Contraparte': cls.build_counterpart(invoice),
             'FechaRegContable': cls.move_date(invoice).strftime(_DATE_FMT),
             'CuotaDeducible': cls.deductible_amount(invoice),
         }
-        if ret['TipoFactura'] not in {'F2', 'F4', 'R5'}:
-            ret['Contraparte'] = cls.build_counterpart(invoice)
         return ret
 
     @classmethod
