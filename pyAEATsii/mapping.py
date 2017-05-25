@@ -102,9 +102,25 @@ class IssuedInvoiceMapper(object):
                 # },
             },
         }
+        cls._update_total_amount(ret, invoice)
         cls._update_counterpart(ret, invoice)
         cls._update_rectified_invoice(ret, invoice)
         return ret
+
+    @classmethod
+    def _update_total_amount(cls, ret, invoice):
+        if (
+            ret['TipoFactura'] == 'R5' and
+            len(
+                ret['TipoDesglose']['DesgloseFactura']['Sujeta']['NoExenta']
+                ['DesgloseIVA']['DetalleIVA']
+            ) == 1 and
+            (
+                ret['TipoDesglose']['DesgloseFactura']['Sujeta']['NoExenta']
+                ['DesgloseIVA']['DetalleIVA'][0]['BaseImponible'] == 0
+            )
+        ):
+            ret['ImporteTotal'] = cls.total_amount(invoice)
 
     @classmethod
     def _update_counterpart(cls, ret, invoice):
@@ -126,12 +142,12 @@ class IssuedInvoiceMapper(object):
     def build_counterpart(cls, invoice):
         return {
             'NombreRazon': cls.counterpart_name(invoice),
-            # 'NIF': cls.counterpart_nif(invoice),
-            'IDOtro': {
-                'IDType': cls.counterpart_id_type(invoice),
-                'CodigoPais': cls.counterpart_country(invoice),
-                'ID': cls.counterpart_nif(invoice),
-            },
+            'NIF': cls.counterpart_nif(invoice),
+            # 'IDOtro': {
+            #     'IDType': cls.counterpart_id_type(invoice),
+            #     'CodigoPais': cls.counterpart_country(invoice),
+            #     'ID': cls.counterpart_nif(invoice),
+            # },
         }
 
     @classmethod

@@ -635,9 +635,13 @@ class IssuedTrytonInvoiceMapper(mapping.IssuedInvoiceMapper):
     serial_number = attrgetter('number')
     issue_date = attrgetter('invoice_date')
     invoice_kind = attrgetter('sii_operation_key')
-    rectified_invoice_kind = attrgetter('rectified_invoice_kind')
-    rectified_base = attrgetter('rectified_base')
-    rectified_amount = attrgetter('rectified_amount')
+
+    @classmethod
+    def rectified_invoice_kind(cls, invoice):
+        return 'I'
+    rectified_base = attrgetter('untaxed_amount')
+    rectified_amount = attrgetter('tax_amount')
+    total_amount = attrgetter('total_amount')
     specialkey_or_trascendence = attrgetter('sii_issued_key')
     description = attrgetter('description')
     not_exempt_kind = attrgetter('sii_subjected')
