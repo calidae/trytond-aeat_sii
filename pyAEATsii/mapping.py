@@ -58,10 +58,8 @@ class IssuedInvoiceMapper(object):
     def build_issued_invoice(cls, invoice):
         ret = {
             'TipoFactura': cls.invoice_kind(invoice),
-            # TODO: TipoRectificativa
             # TODO: FacturasAgrupadas
             # TODO: FacturasRectificadas
-            # TODO: ImporteRectificacion
             # TODO: FechaOperacion
             'ClaveRegimenEspecialOTrascendencia':
                 cls.specialkey_or_trascendence(invoice),
@@ -104,9 +102,25 @@ class IssuedInvoiceMapper(object):
                 # },
             },
         }
+        cls._update_counterpart(ret, invoice)
+        cls._update_rectified_invoice(ret, invoice)
+        return ret
+
+    @classmethod
+    def _update_counterpart(cls, ret, invoice):
         if ret['TipoFactura'] not in {'F2', 'F4', 'R5'}:
             ret['Contraparte'] = cls.build_counterpart(invoice)
-        return ret
+
+    @classmethod
+    def _update_rectified_invoice(cls, ret, invoice):
+        if ret['TipoFactura'] in {'R1', 'R2', 'R3', 'R4', 'R5'}:
+            ret['TipoRectificativa'] = cls.rectified_invoice_kind(invoice)
+            if ret['TipoRectificativa'] == 'S':
+                ret['ImporteRectificacion'] = {
+                    'BaseRectificada': cls.rectified_base(invoice),
+                    'CuotaRectificada': cls.rectified_amount(invoice),
+                    # TODO: CuotaRecargoRectificado
+                }
 
     @classmethod
     def build_counterpart(cls, invoice):
