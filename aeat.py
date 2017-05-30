@@ -5,6 +5,8 @@
 __all__ = [
     'SIIReport',
     'SIIReportLine',
+    'IssuedTrytonInvoiceMapper',
+    'RecievedTrytonInvoiceMapper',
 ]
 
 import unicodedata
@@ -12,17 +14,19 @@ from logging import getLogger
 from decimal import Decimal
 from operator import attrgetter
 
+from pyAEATsii import service
+from pyAEATsii import mapping
+
 from trytond.model import ModelSQL, ModelView, fields, Workflow
+from trytond.model import Model
 from trytond.pyson import Eval
 from trytond.pool import Pool
 from trytond.transaction import Transaction
 
-from .pyAEATsii import service
-from .pyAEATsii import mapping
-
 
 _logger = getLogger(__name__)
 _ZERO = Decimal('0.0')
+
 
 COMMUNICATION_TYPE = [   # L0
     ('A0', 'New Invoices'),
@@ -416,13 +420,14 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             name=self.company.party.name,
             vat=self.company.party.vat_number,
             comm_kind=self.operation_type)
-
+        pool = Pool()
+        mapper = pool.get('aeat.sii.issued.invoice.mapper')(pool=pool)
         res = None
         with self.company.tmp_ssl_credentials() as (crt, key):
             srv = service.bind_issued_invoices_service(crt, key, test=True)
             res = srv.submit(
                 headers, (line.invoice for line in self.lines),
-                mapper=IssuedTrytonInvoiceMapper)
+                mapper=mapper)
 
         # TODO: assert response order matches report order
         for (report_line, response_line) in zip(
@@ -442,13 +447,14 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             name=self.company.party.name,
             vat=self.company.party.vat_number,
             comm_kind=self.operation_type)
-
+        pool = Pool()
+        mapper = pool.get('aeat.sii.issued.invoice.mapper')(pool=pool)
         res = None
         with self.company.tmp_ssl_credentials() as (crt, key):
             srv = service.bind_issued_invoices_service(crt, key, test=True)
             res = srv.cancel(
                 headers, (line.invoice for line in self.lines),
-                mapper=IssuedTrytonInvoiceMapper)
+                mapper=mapper)
 
         # TODO: assert response order matches report order
         for (report_line, response_line) in zip(
@@ -518,13 +524,14 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             name=self.company.party.name,
             vat=self.company.party.vat_number,
             comm_kind=self.operation_type)
-
+        pool = Pool()
+        mapper = pool.get('aeat.sii.recieved.invoice.mapper')(pool=pool)
         res = None
         with self.company.tmp_ssl_credentials() as (crt, key):
             srv = service.bind_recieved_invoices_service(crt, key, test=True)
             res = srv.submit(
                 headers, (line.invoice for line in self.lines),
-                mapper=RecievedTrytonInvoiceMapper)
+                mapper=mapper)
 
         # TODO: assert response order matches report order
         for (report_line, response_line) in zip(
@@ -544,13 +551,14 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             name=self.company.party.name,
             vat=self.company.party.vat_number,
             comm_kind=self.operation_type)
-
+        pool = Pool()
+        mapper = pool.get('aeat.sii.recieved.invoice.mapper')(pool=pool)
         res = None
         with self.company.tmp_ssl_credentials() as (crt, key):
             srv = service.bind_recieved_invoices_service(crt, key, test=True)
             res = srv.cancel(
                 headers, (line.invoice for line in self.lines),
-                mapper=RecievedTrytonInvoiceMapper)
+                mapper=mapper)
 
         # TODO: assert response order matches report order
         for (report_line, response_line) in zip(
@@ -616,51 +624,65 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         })
 
 
-class IssuedTrytonInvoiceMapper(mapping.IssuedInvoiceMapper):
+class BaseTrytonInvoiceMapper(Model):
+
+    def __init__(self, *args, **kwargs):
+        super(BaseTrytonInvoiceMapper, self).__init__(*args, **kwargs)
+        self.pool = Pool()
+
     year = attrgetter('move.period.fiscalyear.name')
     period = attrgetter('move.period.start_date.month')
     nif = attrgetter('company.party.vat_number')
-    serial_number = attrgetter('number')
     issue_date = attrgetter('invoice_date')
     invoice_kind = attrgetter('sii_operation_key')
     rectified_invoice_kind = mapping.hardcode('I')
-    rectified_base = attrgetter('untaxed_amount')
-    rectified_amount = attrgetter('tax_amount')
-    total_amount = attrgetter('total_amount')
-    specialkey_or_trascendence = attrgetter('sii_issued_key')
     description = attrgetter('description')
     not_exempt_kind = attrgetter('sii_subjected')
     counterpart_name = attrgetter('party.name')
     counterpart_nif = attrgetter('party.vat_number')
     counterpart_id_type = attrgetter('party.identifier_type')
     counterpart_country = attrgetter('party.vat_country')
+    counterpart_id = counterpart_nif
     taxes = attrgetter('taxes')
     tax_rate = attrgetter('tax.rate')
     tax_base = attrgetter('base')
     tax_amount = attrgetter('amount')
 
+    def final_serial_number(self, invoice):
+        try:
+            SaleLine = self.pool.get('sale.line')
+        except KeyError:
+            SaleLine = None
+        if SaleLine is not None:
+            return max([
+                line.origin.number
+                for line in invoice.lines
+                if isinstance(line.origin, SaleLine)
+            ])
 
-class RecievedTrytonInvoiceMapper(mapping.RecievedInvoiceMapper):
-    year = attrgetter('move.period.fiscalyear.name')
-    period = attrgetter('move.period.start_date.month')
-    nif = attrgetter('company.party.vat_number')
+
+class IssuedTrytonInvoiceMapper(
+    mapping.IssuedInvoiceMapper, BaseTrytonInvoiceMapper
+):
+    """
+    Tryton Issued Invoice to AEAT mapper
+    """
+    __name__ = 'aeat.sii.issued.invoice.mapper'
+    serial_number = attrgetter('number')
+    specialkey_or_trascendence = attrgetter('sii_issued_key')
+
+
+class RecievedTrytonInvoiceMapper(
+    mapping.RecievedInvoiceMapper, BaseTrytonInvoiceMapper
+):
+    """
+    Tryton Recieved Invoice to AEAT mapper
+    """
+    __name__ = 'aeat.sii.recieved.invoice.mapper'
     serial_number = attrgetter('reference')
-    issue_date = attrgetter('invoice_date')
-    invoice_kind = attrgetter('sii_operation_key')
-    rectified_invoice_kind = mapping.hardcode('I')
     specialkey_or_trascendence = attrgetter('sii_received_key')
-    description = attrgetter('description')
-    not_exempt_kind = attrgetter('sii_subjected')
-    counterpart_name = attrgetter('party.name')
-    counterpart_nif = attrgetter('party.vat_number')
-    counterpart_id_type = attrgetter('party.identifier_type')
-    counterpart_country = attrgetter('party.vat_country')
     move_date = attrgetter('move.date')
     deductible_amount = attrgetter('tax_amount')  # most of the times
-    taxes = attrgetter('taxes')
-    tax_rate = attrgetter('tax.rate')
-    tax_base = attrgetter('base')
-    tax_amount = attrgetter('amount')
 
 
 class SIIReportLine(ModelSQL, ModelView):
