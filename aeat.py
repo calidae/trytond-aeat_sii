@@ -31,7 +31,7 @@ _ZERO = Decimal('0.0')
 COMMUNICATION_TYPE = [   # L0
     ('A0', 'New Invoices'),
     ('A1', 'Modify Invoices'),
-    ('A4', 'Modify (Travelers)'),
+    # ('A4', 'Modify (Travelers)'),  # Not suported
     ('C0', 'Query Invoices'),  # Not in L0
     ('D0', 'Delete Invoices'),  # Not In L0
 ]
@@ -126,9 +126,9 @@ AEAT_COMMUNICATION_STATE = [
 
 AEAT_INVOICE_STATE = [
     (None, ''),
-    ('Correcto', 'Accepted'),
+    ('Correcto', 'Accepted '),
     ('Correcta', 'Accepted'),  # You guys are disgusting
-    ('AceptadoConErrores', 'Accepted with Errors'),
+    ('AceptadoConErrores', 'Accepted with Errors '),
     ('AceptadaConErrores', 'Accepted with Errors'),  # Shame on AEAT
     ('Anulada', 'Deleted'),
     ('Incorrecto', 'Rejected')
