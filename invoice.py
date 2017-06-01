@@ -96,7 +96,7 @@ class Invoice:
 
         table = SIILines.__table__()
 
-        cursor = Transaction().cursor
+        cursor = Transaction().connection.cursor()
         cursor.execute(*table.select(Max(table.id), table.invoice,
             group_by=table.invoice))
 
@@ -126,7 +126,7 @@ class Invoice:
             result[name] = dict((i.id, '') for i in invoices)
 
         table = SIILines.__table__()
-        cursor = Transaction().cursor
+        cursor = Transaction().connection.cursor()
         cursor.execute(*table.select(Max(table.id), table.invoice,
             where=table.invoice.in_([x.id for x in invoices]),
             group_by=table.invoice))

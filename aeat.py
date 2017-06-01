@@ -126,9 +126,9 @@ AEAT_COMMUNICATION_STATE = [
 
 AEAT_INVOICE_STATE = [
     (None, ''),
-    ('Correcto', 'Accepted'),
+    ('Correcto', 'Accepted '),
     ('Correcta', 'Accepted'),  # You guys are disgusting
-    ('AceptadoConErrores', 'Accepted with Errors'),
+    ('AceptadoConErrores', 'Accepted with Errors '),
     ('AceptadaConErrores', 'Accepted with Errors'),  # Shame on AEAT
     ('Anulada', 'Deleted'),
     ('Incorrecto', 'Rejected')
@@ -234,7 +234,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             }, depends=['state'])
 
     period = fields.Many2One('account.period', 'Period', required=True,
-        domain = [('fiscalyear','=', Eval('fiscalyear'))],
+        domain=[('fiscalyear', '=', Eval('fiscalyear'))],
         states={
             'readonly': Eval('state') != 'draft',
             }, depends=['state'])
@@ -258,7 +258,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             ('sent', 'Sent'),
         ], 'State', readonly=True)
 
-    communication_state = fields.Selection( AEAT_COMMUNICATION_STATE,
+    communication_state = fields.Selection(AEAT_COMMUNICATION_STATE,
         'Communication State', readonly=True)
 
     csv = fields.Char(
@@ -274,7 +274,6 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         'Lines', states={
             'readonly': ~Eval('state').in_(['draft']),
             }, depends=['state'])
-
 
     @classmethod
     def __setup__(cls):
@@ -299,7 +298,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                     },
                 'load_invoices': {
                     'invisible': ~(Eval('state').in_(['draft']) &
-                         Eval('operation_type').in_(['A0','A1'])),
+                         Eval('operation_type').in_(['A0', 'A1'])),
                     }
                 })
 
@@ -311,7 +310,6 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                 ('confirmed', 'cancelled'),
                 ('cancelled', 'draft'),
                 ))
-
 
 
     @staticmethod
@@ -339,7 +337,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
     @fields.depends('company')
     def on_change_with_company_vat(self):
         if self.company:
-            return self.company.party.vat_number
+            return self.company.party.vat_code
 
     @classmethod
     @ModelView.button
@@ -418,7 +416,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         _logger.info('Sending report %s to AEAT SII', self.id)
         headers = mapping.get_headers(
             name=self.company.party.name,
-            vat=self.company.party.vat_number,
+            vat=self.company.party.vat_code,
             comm_kind=self.operation_type)
         pool = Pool()
         mapper = pool.get('aeat.sii.issued.invoice.mapper')(pool=pool)
@@ -445,7 +443,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
     def delete_issued_invoices(self):
         headers = mapping.get_headers(
             name=self.company.party.name,
-            vat=self.company.party.vat_number,
+            vat=self.company.party.vat_code,
             comm_kind=self.operation_type)
         pool = Pool()
         mapper = pool.get('aeat.sii.issued.invoice.mapper')(pool=pool)
@@ -475,7 +473,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         Invoice = pool.get('account.invoice')
         headers = mapping.get_headers(
             name=self.company.party.name,
-            vat=self.company.party.vat_number,
+            vat=self.company.party.vat_code,
             comm_kind=self.operation_type)
 
         with self.company.tmp_ssl_credentials() as (crt, key):
@@ -522,7 +520,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         _logger.info('Sending report %s to AEAT SII', self.id)
         headers = mapping.get_headers(
             name=self.company.party.name,
-            vat=self.company.party.vat_number,
+            vat=self.company.party.vat_code,
             comm_kind=self.operation_type)
         pool = Pool()
         mapper = pool.get('aeat.sii.recieved.invoice.mapper')(pool=pool)
@@ -549,7 +547,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
     def delete_recieved_invoices(self):
         headers = mapping.get_headers(
             name=self.company.party.name,
-            vat=self.company.party.vat_number,
+            vat=self.company.party.vat_code,
             comm_kind=self.operation_type)
         pool = Pool()
         mapper = pool.get('aeat.sii.recieved.invoice.mapper')(pool=pool)
@@ -579,7 +577,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         Invoice = pool.get('account.invoice')
         headers = mapping.get_headers(
             name=self.company.party.name,
-            vat=self.company.party.vat_number,
+            vat=self.company.party.vat_code,
             comm_kind=self.operation_type)
 
         with self.company.tmp_ssl_credentials() as (crt, key):
@@ -632,14 +630,14 @@ class BaseTrytonInvoiceMapper(Model):
 
     year = attrgetter('move.period.fiscalyear.name')
     period = attrgetter('move.period.start_date.month')
-    nif = attrgetter('company.party.vat_number')
+    nif = attrgetter('company.party.vat_code')
     issue_date = attrgetter('invoice_date')
     invoice_kind = attrgetter('sii_operation_key')
     rectified_invoice_kind = mapping.hardcode('I')
     description = attrgetter('description')
     not_exempt_kind = attrgetter('sii_subjected')
     counterpart_name = attrgetter('party.name')
-    counterpart_nif = attrgetter('party.vat_number')
+    counterpart_nif = attrgetter('party.vat_code')
     counterpart_id_type = attrgetter('party.identifier_type')
     counterpart_country = attrgetter('party.vat_country')
     counterpart_id = counterpart_nif

@@ -7,11 +7,10 @@ from . import aeat
 
 __all__ = ['Party']
 
-
 class Party:
     __name__ = 'party.party'
     __metaclass__ = PoolMeta
 
     # TODO: v4 change to party.identifier module
-    identifier_type = fields.Selection( [('','')] + aeat.PARTY_IDENTIFIER_TYPE,
+    identifier_type = fields.Selection([('', '')] + aeat.PARTY_IDENTIFIER_TYPE,
         'Identifier Type', )
