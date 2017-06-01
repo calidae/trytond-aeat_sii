@@ -16,6 +16,7 @@ from operator import attrgetter
 
 from pyAEATsii import service
 from pyAEATsii import mapping
+from pyAEATsii import callback_utils
 
 from trytond.model import ModelSQL, ModelView, fields, Workflow
 from trytond.model import Model
@@ -633,8 +634,7 @@ class BaseTrytonInvoiceMapper(Model):
     nif = attrgetter('company.party.vat_code')
     issue_date = attrgetter('invoice_date')
     invoice_kind = attrgetter('sii_operation_key')
-    rectified_invoice_kind = mapping.hardcode('I')
-    description = attrgetter('description')
+    rectified_invoice_kind = callback_utils.fixed_value('I')
     not_exempt_kind = attrgetter('sii_subjected')
     counterpart_name = attrgetter('party.name')
     counterpart_nif = attrgetter('party.vat_code')
@@ -645,6 +645,15 @@ class BaseTrytonInvoiceMapper(Model):
     tax_rate = attrgetter('tax.rate')
     tax_base = attrgetter('base')
     tax_amount = attrgetter('amount')
+    tax_equivalence_surcharge_rate = callback_utils.fixed_value(None)
+    tax_equivalence_surcharge_amount = callback_utils.fixed_value(None)
+
+    def description(self, invoice):
+        return (
+            invoice.description or
+            invoice.lines[0].description or
+            self.serial_number(invoice)
+        )
 
     def final_serial_number(self, invoice):
         try:

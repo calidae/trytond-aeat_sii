@@ -36,7 +36,12 @@ major_version, minor_version, _ = version.split('.', 2)
 major_version = int(major_version)
 minor_version = int(minor_version)
 
-requires = ['cryptography', 'pyOpenSSL', 'pyAEATsii', 'vatnumber']
+requires = [
+    'cryptography',
+    'pyOpenSSL',
+    'pyAEATsii>=0.2',
+    'vatnumber'
+]
 for dep in info.get('depends', []):
     if not re.match(r'(ir|res|webdav)(\W|$)', dep):
         prefix = MODULE2PREFIX.get(dep, 'trytond')
