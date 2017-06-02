@@ -55,8 +55,9 @@ OPERATION_KEY = [    # L2_EMI - L2_RECI
     ('R3', 'Credit Note (Art 80.4)'),
     ('R4', 'Credit Note'),
     ('R5', 'Credit Note on simplified Invoices'),
-    ('F3', 'Invoice issued as a substitute for simplified invoices'
-        'Billed and declared'),
+    ('F3', 'Invoice issued as a substitute\n'
+        'for simplified invoices\n'
+        'Billed and declared\n'),
     ('F4', 'Invoice Summary Account Move'),
     ('F5', 'Import (DUA)'),
     ('F6', 'Other accounting documents'),
@@ -66,7 +67,8 @@ OPERATION_KEY = [    # L2_EMI - L2_RECI
 PARTY_IDENTIFIER_TYPE = [
     ('02', 'NIF'),
     ('03', 'Passport'),
-    ('04', 'Official Document Emmited by the Country of Residence'),
+    ('04', 'Official Document Emmited by\n'
+            'the Country of Residence'),
     ('05', 'Certificate of fiscal resident'),
     ('06', 'Other proving document'),
     ('07', 'Not on the Census'),
@@ -76,45 +78,47 @@ PARTY_IDENTIFIER_TYPE = [
 SEND_SPECIAL_REGIME_KEY = [  # L3.1
     ('01', 'Common System Operation'),
     ('02', 'Export'),
-    ('03', 'Operations to which the special arrangements for second-hand goods,'
-        ' art objects, antiques and collectors articles apply (135-139 LIVA)'),
+    ('03', 'Operations to which the special arrangements for\n'
+        'second-hand goods, art objects, antiques and collectors\n'
+        'articles apply (135-139 LIVA)'),
     ('04', 'Special investment gold regime'),
     ('05', 'Special travel agencies'),
     ('06', 'Special group of entities in VAT (Advanced Level)'),
     ('07', 'Special scheme for cash'),
     ('08', 'Operations subject to IPSI / IGIC'),
-    ('09', 'Invoicing of travel agency services acting as mediators in the '
-           'name and for the account of others (D.A.4a RD1619 2012)'),
-#     ('10', 'Collection on behalf of third parties of professional fees or '
-#         'rights derived from industrial property, author or others...'),
-#      ('11', 'Business premises lease transactions subject to withholding'),
-#     ('12', 'Non-retention business lease operations'),
-#     ('13', 'Lease transactions of business premises subject to and not subject '
-#         ' to withholding'),
-#     ('14', 'Invoice with tax pending of accrual (certifications of works whose'
-#         ' addressee is a Public Administration)'),
-#     ('15', 'Invoice with VAT pending accrual - operations of successive tract'),
+    ('09', 'Invoicing of travel agency services acting\n'
+            'as mediators in the name and for the account\n'
+            'of others (D.A.4a RD1619 2012)'),
+    ('10', 'Collection on behalf of third parties of\n'
+            'professional fees or rights derived from\n'
+            'industrial property, author or others...'),
+    ('11', 'Business premises lease transactions'
+            'subject to withholding'),
+    ('12', 'Non-retention business lease operations'),
+    ('13', 'Lease transactions of business premises\n'
+            'subject to and not subject to withholding'),
+    ('14', 'Invoice with tax pending of accrual\n'
+            '(certifications of works whose addresses\n'
+            'is a Public Administration)'),
+    ('15', 'Invoice with VAT pending accrual -\n'
+            'operations of successive tract'),
     ]
 
 RECEIVE_SPECIAL_REGIME_KEY = [
     ('01', 'Common system operation'),
-    ('02', 'Operations by which employers satisfy REAGYP compensation'),
-    ('03', 'Operations to which the special arrangements for second-hand goods,'
-        ' art objects, antiques and collectors articles apply (135-139 LIVA)'),
+    ('02', 'Operations by which employers '
+           'satisfy REAGYP compensation'),
+    ('03', 'Operations to which the special arrangements\n'
+            'for second-hand goods, art objects, antiques\n'
+            'and collectors articles apply (135-139 LIVA)'),
     ('04', 'Special investment gold regime'),
     ('05', 'Special travel agencies'),
     ('06', 'Special group of entities in VAT (Advanced Level)'),
     ('07', 'Special scheme for cash'),
     ('08', 'Operations subject to IPSI / IGIC'),
     ('09', 'Intra-Community acquisitions of goods and services'),
-    ('10', 'Purchase of travel agencies: mediation operations in the name and '
-        'for the account of others in transport services provided to the '
-        'recipient of the services in accordance with section 3 '
-        'of D.A.4a RD1619 / 2012'),
-    ('11', 'Billing of travel agency services acting as mediators in the name '
-        'and for the account of others (D.A.4a RD1619 / 2012)'),
     ('12', 'Business premises lease operations'),
-    ('13', 'Invoice corresponding to an import '
+    ('13', 'Invoice corresponding to an import\n'
         '(reported without associating with a DUA)')
 ]
 
@@ -139,15 +143,20 @@ AEAT_INVOICE_STATE = [
 PROPERTY_STATE = [  # L6
     ('0', ''),
     ('1',
-        '1. Property with cadastral reference located at any point in the '
-        'Spanish territory, except the Basque Country and Navarra.'),
+        '1. Property with cadastral reference\n'
+        'located at any point in the\n'
+        'Spanish territory, except the Basque\n'
+        'Country and Navarra.'),
     ('2',
-        '2. Property located in the Autonomous Community of the Basque '
-        'Country or in the Comunidad Foral de Navarra.'),
+        '2. Property located in the Autonomous\n'
+        'Community of the Basque Country or\n'
+        'in the Comunidad Foral de Navarra.'),
     ('3',
-        '3. Property in any of the above situations but without cadastral '
+        '3. Property in any of the above\n'
+        'situations but without cadastral\n'
         'reference.'),
-    ('4', '4. Property located in the foreign country.'),
+    ('4', '4. Property located in the foreign\n'
+        'country.'),
     ]
 
 
@@ -177,12 +186,16 @@ PAYMENT_TYPE = [
 
 # L12
 INTRACOMUNITARY_TYPE = [
-    ('A', 'The sending or receiving of goods for the execution of the partial\n'
-           'reports or works Mentioned in article 70, paragraph one, number 7,\n'
+    ('A', 'The sending or receiving of goods for\n'
+           'the execution of the partial\n'
+           'reports or works Mentioned in \n'
+           'article 70, paragraph one, number 7,\n'
            'of the Tax Law (Law 37/1992).'),
-    ('B', 'Transfers of goods and intra-Community acquisitions of goods \n'
-          'covered by In articles 9, paragraph 3, and 16, section 2, of the \n'
-          'Tax Law (Law 37/1992).'),
+    ('B', 'Transfers of goods and intra-Community\n'
+           'acquisitions of goods covered by In \n'
+           'articles 9, paragraph 3, and 16, \n'
+           'section 2, of the \n'
+           'Tax Law (Law 37/1992).'),
 ]
 
 
@@ -235,7 +248,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             }, depends=['state'])
 
     period = fields.Many2One('account.period', 'Period', required=True,
-        domain = [('fiscalyear','=', Eval('fiscalyear'))],
+        domain=[('fiscalyear', '=', Eval('fiscalyear'))],
         states={
             'readonly': Eval('state') != 'draft',
             }, depends=['state'])
@@ -259,7 +272,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             ('sent', 'Sent'),
         ], 'State', readonly=True)
 
-    communication_state = fields.Selection( AEAT_COMMUNICATION_STATE,
+    communication_state = fields.Selection(AEAT_COMMUNICATION_STATE,
         'Communication State', readonly=True)
 
     csv = fields.Char(
@@ -300,7 +313,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                     },
                 'load_invoices': {
                     'invisible': ~(Eval('state').in_(['draft']) &
-                         Eval('operation_type').in_(['A0','A1'])),
+                         Eval('operation_type').in_(['A0', 'A1'])),
                     }
                 })
 
@@ -312,7 +325,6 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                 ('confirmed', 'cancelled'),
                 ('cancelled', 'draft'),
                 ))
-
 
 
     @staticmethod
@@ -523,7 +535,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         _logger.info('Sending report %s to AEAT SII', self.id)
         headers = mapping.get_headers(
             name=self.company.party.name,
-            vat=self.company.party.vat_number,
+            vat=self.company.party.vat_code,
             comm_kind=self.operation_type)
         pool = Pool()
         mapper = pool.get('aeat.sii.recieved.invoice.mapper')(pool=pool)
@@ -550,7 +562,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
     def delete_recieved_invoices(self):
         headers = mapping.get_headers(
             name=self.company.party.name,
-            vat=self.company.party.vat_number,
+            vat=self.company.party.vat_code,
             comm_kind=self.operation_type)
         pool = Pool()
         mapper = pool.get('aeat.sii.recieved.invoice.mapper')(pool=pool)
@@ -580,7 +592,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         Invoice = pool.get('account.invoice')
         headers = mapping.get_headers(
             name=self.company.party.name,
-            vat=self.company.party.vat_number,
+            vat=self.company.party.vat_code,
             comm_kind=self.operation_type)
 
         with self.company.tmp_ssl_credentials() as (crt, key):
@@ -633,13 +645,13 @@ class BaseTrytonInvoiceMapper(Model):
 
     year = attrgetter('move.period.fiscalyear.name')
     period = attrgetter('move.period.start_date.month')
-    nif = attrgetter('company.party.vat_number')
+    nif = attrgetter('company.party.vat_code')
     issue_date = attrgetter('invoice_date')
     invoice_kind = attrgetter('sii_operation_key')
     rectified_invoice_kind = callback_utils.fixed_value('I')
     not_exempt_kind = attrgetter('sii_subjected')
     counterpart_name = attrgetter('party.name')
-    counterpart_nif = attrgetter('party.vat_number')
+    counterpart_nif = attrgetter('party.vat_code')
     counterpart_id_type = attrgetter('party.identifier_type')
     counterpart_country = attrgetter('party.vat_country')
     counterpart_id = counterpart_nif
