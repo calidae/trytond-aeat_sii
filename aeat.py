@@ -251,7 +251,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         domain=[('fiscalyear', '=', Eval('fiscalyear'))],
         states={
             'readonly': Eval('state') != 'draft',
-            }, depends=['state'])
+            }, depends=['state', 'fiscalyear'])
 
     operation_type = fields.Selection(COMMUNICATION_TYPE, 'Operation Type',
         required=True,

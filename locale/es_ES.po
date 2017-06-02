@@ -802,14 +802,13 @@ msgctxt "view:aeat.sii.report:"
 msgid "Load Invoices"
 msgstr "Cargar facturas"
 
-#, fuzzy
 msgctxt "view:aeat.sii.report:"
 msgid "Send"
 msgstr "Enviar"
 
 msgctxt "view:company.company:"
 msgid "Certificate"
-msgstr ""
+msgstr "Certificado"
 
 msgctxt "wizard_button:aeat.sii.load_pkcs12,start,end:"
 msgid "Cancel"
