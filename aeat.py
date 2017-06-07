@@ -79,6 +79,7 @@ PARTY_IDENTIFIER_TYPE = [
 
 
 SEND_SPECIAL_REGIME_KEY = [  # L3.1
+    (None, ''),
     ('01', 'Common System Operation'),
     ('02', 'Export'),
     ('03', 'Operations to which the special arrangements for\n'
@@ -108,6 +109,7 @@ SEND_SPECIAL_REGIME_KEY = [  # L3.1
     ]
 
 RECEIVE_SPECIAL_REGIME_KEY = [
+    (None, ''),
     ('01', 'Common system operation'),
     ('02', 'Operations by which employers '
            'satisfy REAGYP compensation'),
@@ -165,12 +167,16 @@ PROPERTY_STATE = [  # L6
 
 # L7 - Iva Subjected
 IVA_SUBJECTED = [
+    (None, ''),
     ('S1', 'Subjected - Not Excempt'),
-    ('S2', 'Subjected - Not Excempt ,  Inv. Suj. Pass')
+    ('S2', 'Subjected - Not Excempt ,  Inv. Suj. Pass'),
+    ('S3', 'Subjected - Not Excempt ,  With and Withot Inv. Suj. Pass')
+
 ]
 
 # L9 - Excemption cause
 EXCEMPTION_CAUSE = [
+    (None, ''),
     ('E1', 'Excempt. Article 20'),
     ('E2', 'Excempt. Article 21'),
     ('E3', 'Excempt. Article 22'),
