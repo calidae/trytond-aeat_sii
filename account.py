@@ -28,13 +28,11 @@ class TemplateTax:
 
     def _get_tax_value(self, tax=None):
         res = super(TemplateTax, self)._get_tax_value(tax)
-        print "res:", res
         for field in ('sii_book_key', 'sii_issued_key', 'sii_subjected_key',
                 'sii_excemption_key', 'sii_received_key',
                 'sii_intracomunity_key'):
 
             if not tax or getattr(tax, field) != getattr(self, field):
-                print "A:", field, getattr(self, field)
                 res[field] = getattr(self, field)
 
         return res
