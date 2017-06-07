@@ -7,6 +7,7 @@ from trytond.pyson import Eval
 from trytond.transaction import Transaction
 
 from sql.aggregate import Max
+
 from .aeat import (
     OPERATION_KEY, BOOK_KEY, SEND_SPECIAL_REGIME_KEY,
     RECEIVE_SPECIAL_REGIME_KEY, AEAT_INVOICE_STATE, IVA_SUBJECTED,
@@ -24,21 +25,21 @@ class Invoice:
         'SII Book Key')
     sii_operation_key = fields.Selection([(None, ''), ] + OPERATION_KEY,
         'SII Operation Key')
-    sii_issued_key = fields.Selection([(None, ''), ] + SEND_SPECIAL_REGIME_KEY,
+    sii_issued_key = fields.Selection(SEND_SPECIAL_REGIME_KEY,
         'SII Issued Key',
         states={
             'invisible': ~Eval('type').in_(['out_invoice', 'out_credit_note']),
         })
-    sii_received_key = fields.Selection([(None, ''), ] +
-        RECEIVE_SPECIAL_REGIME_KEY, 'SII Recived Key',
+    sii_received_key = fields.Selection(RECEIVE_SPECIAL_REGIME_KEY,
+        'SII Recived Key',
         states={
             'invisible': Eval('type').in_(['out_invoice', 'out_credit_note']),
         })
-    sii_subjected = fields.Selection([(None, '')] + IVA_SUBJECTED, 'Subjected')
-    sii_excemption_cause = fields.Selection([(None, '')] + EXCEMPTION_CAUSE,
+    sii_subjected = fields.Selection(IVA_SUBJECTED, 'Subjected')
+    sii_excemption_cause = fields.Selection(EXCEMPTION_CAUSE,
         'Excemption Cause')
-    sii_intracomunity_key = fields.Selection([(None, ''), ] +
-        INTRACOMUNITARY_TYPE, 'SII Intracommunity Key',
+    sii_intracomunity_key = fields.Selection(INTRACOMUNITARY_TYPE,
+        'SII Intracommunity Key',
         states={
             'invisible': ~Eval('sii_book_key').in_(['U']),
         }
@@ -54,40 +55,6 @@ class Invoice:
         cls._check_modify_exclude += ['sii_book_key', 'sii_operation_key',
             'sii_received_key', 'sii_issued_key', 'sii_subjected',
             'sii_excemption_cause', 'sii_intracomunity_key']
-
-    @staticmethod
-    def default_sii_book_key():
-        type_ = Transaction().context.get('type', 'out_invoice')
-        book_key = 'E'
-        if type_ and type_ == 'in_invoice':
-            book_key = 'R'
-
-        return book_key
-
-    @staticmethod
-    def default_sii_subjected():
-        return 'S1'
-
-    @staticmethod
-    def default_sii_issued_key():
-        type_ = Transaction().context.get('type', 'out_invoice')
-        if type_ == 'out_invoice':
-            return '01'
-        return 'None'
-
-    @staticmethod
-    def default_sii_received_key():
-        type_ = Transaction().context.get('type', 'out_invoice')
-        if type_ == 'in_invoice':
-            return '01'
-        return 'None'
-
-    @staticmethod
-    def default_sii_operation_key():
-        type_ = Transaction().context.get('type', 'out_invoice')
-        if type_ in ('in_credit_note', 'out_credit_note'):
-            return 'R1'
-        return 'F1'
 
     @classmethod
     def search_sii_state(cls, name, clause):
@@ -111,8 +78,6 @@ class Invoice:
 
         clause2 = [tuple(('state',)) + tuple(clause[1:])] + \
             [('id', 'in', lines)]
-
-        print "clause2:", clause2
 
         res_lines = SIILines.search(clause2)
         return [('id', 'in', [x.invoice.id for x in res_lines])]
@@ -150,4 +115,23 @@ class Invoice:
             res[field] = getattr(self, field)
 
         res['sii_operation_key'] = 'R4'
+        return res
+
+    @fields.depends('sii_book_key', 'sii_issued_key', 'sii_received_key',
+            'sii_subjected', 'sii_excemption_cause', 'sii_intracomunity_key')
+    def _on_change_lines_taxes(self):
+        res = super(Invoice, self)._on_change_lines_taxes()
+        for field in ('sii_book_key', 'sii_issued_key', 'sii_received_key',
+                'sii_subjected', 'sii_excemption_cause',
+                'sii_intracomunity_key'):
+            if getattr(self, field):
+                return res
+
+        tax = self.taxes and self.taxes[0]
+        if not tax:
+            return res
+        for field in ('sii_book_key', 'sii_issued_key', 'sii_received_key',
+                'sii_subjected', 'sii_excemption_cause',
+                'sii_intracomunity_key'):
+            res[field] = getattr(tax, field)
         return res
