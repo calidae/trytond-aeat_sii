@@ -12,8 +12,8 @@ class Party:
     __metaclass__ = PoolMeta
 
     # TODO: v4 change to party.identifier module
-    identifier_type = fields.Selection([('', '')] + aeat.PARTY_IDENTIFIER_TYPE,
-        'Identifier Type', )
+    identifier_type = fields.Selection(aeat.PARTY_IDENTIFIER_TYPE,
+        'Identifier Type')
     sii_vat_code = fields.Function(fields.Char('VAT', size=9),
         'get_sii_vat_data')
     sii_vat_country = fields.Function(fields.Char('VAT', size=2),
