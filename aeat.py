@@ -38,6 +38,7 @@ COMMUNICATION_TYPE = [   # L0
 ]
 
 BOOK_KEY = [
+    (None, ''),
     ('E', 'Issued Invoices'),
     ('I', 'Investment Goods'),
     ('R', 'Received Invoices'),
@@ -48,6 +49,7 @@ BOOK_KEY = [
 ]
 
 OPERATION_KEY = [    # L2_EMI - L2_RECI
+    (None, ''),
     ('F1', 'Invoice'),
     ('F2', 'Simplified Invoice'),
     ('R1', 'Credit Note (Art 80.1 y 80.2)'),
@@ -65,6 +67,7 @@ OPERATION_KEY = [    # L2_EMI - L2_RECI
 ]
 
 PARTY_IDENTIFIER_TYPE = [
+    (None, ''),
     ('02', 'NIF'),
     ('03', 'Passport'),
     ('04', 'Official Document Emmited by\n'
@@ -186,6 +189,7 @@ PAYMENT_TYPE = [
 
 # L12
 INTRACOMUNITARY_TYPE = [
+    (None, ''),
     ('A', 'The sending or receiving of goods for\n'
            'the execution of the partial\n'
            'reports or works Mentioned in \n'

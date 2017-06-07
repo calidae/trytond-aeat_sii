@@ -20,11 +20,9 @@ class Invoice:
     __metaclass__ = PoolMeta
     __name__ = 'account.invoice'
 
-    sii_book_key = fields.Selection([(None, ''), ] + BOOK_KEY,
-        'SII Book Key')
-    sii_operation_key = fields.Selection([(None, ''), ] + OPERATION_KEY,
-        'SII Operation Key')
-    sii_issued_key = fields.Selection([(None, ''), ] + SEND_SPECIAL_REGIME_KEY,
+    sii_book_key = fields.Selection(BOOK_KEY, 'SII Book Key')
+    sii_operation_key = fields.Selection(OPERATION_KEY, 'SII Operation Key')
+    sii_issued_key = fields.Selection(SEND_SPECIAL_REGIME_KEY,
         'SII Issued Key',
         states={
             'invisible': ~Eval('type').in_(['out_invoice', 'out_credit_note']),
