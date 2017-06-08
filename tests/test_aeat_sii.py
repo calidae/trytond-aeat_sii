@@ -8,8 +8,8 @@ from trytond.tests.test_tryton import test_view, test_depends
 # from trytond.tests.test_tryton import doctest_setup, doctest_teardown
 
 
-class TestCase(unittest.TestCase):
-    'Test module'
+class AeatSIITestCase(unittest.TestCase):
+    'Test AEAT SII module'
 
     def setUp(self):
         trytond.tests.test_tryton.install_module('aeat_sii')

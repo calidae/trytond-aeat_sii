@@ -1,6 +1,5 @@
-#This file is part party_comment module for Tryton.
-#The COPYRIGHT file at the top level of this repository contains
-#the full copyright notices and license terms.
+# The COPYRIGHT file at the top level of this repository contains
+# the full copyright notices and license terms.
 
 from logging import getLogger
 from contextlib import contextmanager
@@ -27,6 +26,7 @@ class Company:
 
         cls._error_messages.update({
             'missing_fernet_key': "Missing Fernet key configuration",
+            'missing_pem_cert': "Missing PEM certificate"
         })
 
     pem_certificate = fields.Binary(
@@ -90,6 +90,8 @@ class Company:
 
     @contextmanager
     def tmp_ssl_credentials(self):
+        if not self.pem_certificate:
+            self.raise_user_error('missing_pem_cert')
         with NamedTemporaryFile(suffix='.crt') as crt:
             with NamedTemporaryFile(suffix='.pem') as key:
                 crt.write(self.pem_certificate)
