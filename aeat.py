@@ -545,7 +545,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         _logger.info('Sending report %s to AEAT SII', self.id)
         headers = mapping.get_headers(
             name=self.company.party.name,
-            vat=self.company.party.vat_code,
+            vat=self.company.party.vat_number,
             comm_kind=self.operation_type)
         pool = Pool()
         mapper = pool.get('aeat.sii.recieved.invoice.mapper')(pool=pool)
@@ -572,7 +572,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
     def delete_recieved_invoices(self):
         headers = mapping.get_headers(
             name=self.company.party.name,
-            vat=self.company.party.vat_code,
+            vat=self.company.party.vat_number,
             comm_kind=self.operation_type)
         pool = Pool()
         mapper = pool.get('aeat.sii.recieved.invoice.mapper')(pool=pool)
@@ -602,7 +602,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         Invoice = pool.get('account.invoice')
         headers = mapping.get_headers(
             name=self.company.party.name,
-            vat=self.company.party.vat_code,
+            vat=self.company.party.vat_number,
             comm_kind=self.operation_type)
 
         with self.company.tmp_ssl_credentials() as (crt, key):
@@ -655,22 +655,19 @@ class BaseTrytonInvoiceMapper(Model):
 
     year = attrgetter('move.period.fiscalyear.name')
     period = attrgetter('move.period.start_date.month')
-    nif = attrgetter('company.party.vat_code')
+    nif = attrgetter('company.party.vat_number')
     issue_date = attrgetter('invoice_date')
     invoice_kind = attrgetter('sii_operation_key')
     rectified_invoice_kind = callback_utils.fixed_value('I')
     not_exempt_kind = attrgetter('sii_subjected')
     counterpart_name = attrgetter('party.name')
-    counterpart_nif = attrgetter('party.vat_code')
+    counterpart_nif = attrgetter('party.vat_number')
     counterpart_id_type = attrgetter('party.identifier_type')
     counterpart_country = attrgetter('party.vat_country')
     counterpart_id = counterpart_nif
-    taxes = attrgetter('taxes')
     tax_rate = attrgetter('tax.rate')
     tax_base = attrgetter('base')
     tax_amount = attrgetter('amount')
-    tax_equivalence_surcharge_rate = callback_utils.fixed_value(None)
-    tax_equivalence_surcharge_amount = callback_utils.fixed_value(None)
 
     def description(self, invoice):
         return (
@@ -690,6 +687,41 @@ class BaseTrytonInvoiceMapper(Model):
                 for line in invoice.lines
                 if isinstance(line.origin, SaleLine)
             ])
+
+    def taxes(self, invoice):
+        return [
+            invoice_tax for invoice_tax in invoice.taxes
+            if (
+                invoice_tax.tax.sii_subjected_key == 'S1' and
+                not invoice_tax.tax.recargo_equivalencia
+            )
+        ]
+
+    def _tax_equivalence_surcharge(self, invoice_tax):
+        parent_tax = invoice_tax.tax.parent
+        surcharge_taxes = [
+            sibling
+            for sibling in invoice_tax.invoice.taxes
+            if (
+                sibling.tax.recargo_equivalencia and
+                sibling.tax.parent.id == parent_tax.id
+            )
+        ]
+        if surcharge_taxes:
+            (invoice_tax,) = surcharge_taxes
+            return invoice_tax
+        else:
+            return None
+
+    def tax_equivalence_surcharge_rate(self, invoice_tax):
+        invoice_tax = self._tax_equivalence_surcharge(invoice_tax)
+        if invoice_tax:
+            return self.tax_rate(invoice_tax)
+
+    def tax_equivalence_surcharge_amount(self, invoice_tax):
+        invoice_tax = self._tax_equivalence_surcharge(invoice_tax)
+        if invoice_tax:
+            return self.tax_amount(invoice_tax)
 
 
 class IssuedTrytonInvoiceMapper(
