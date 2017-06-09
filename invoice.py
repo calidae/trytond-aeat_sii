@@ -86,7 +86,7 @@ class Invoice:
         SIILines = pool.get('aeat.sii.report.lines')
         result = {}
         for name in names:
-            result[name] = dict((i.id, '') for i in invoices)
+            result[name] = dict((i.id, None) for i in invoices)
 
         table = SIILines.__table__()
         cursor = Transaction().cursor
@@ -102,7 +102,6 @@ class Invoice:
 
             for state, inv in cursor.fetchall():
                 result['sii_state'][inv] = state
-
         return result
 
     def _credit(self):
