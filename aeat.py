@@ -779,3 +779,14 @@ class SIIReportLine(ModelSQL, ModelView):
     @staticmethod
     def default_company():
         return Transaction().context.get('company')
+
+    @classmethod
+    def copy(cls, records, default=None):
+        if default is None:
+            default = {}
+        else:
+            default = default.copy()
+        default['state'] = None
+        default['communication_code'] = None
+        default['communication_msg'] = None
+        return super(SIIReportLine, cls).copy(records, default=default)
