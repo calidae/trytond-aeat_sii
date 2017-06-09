@@ -336,8 +336,10 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                 ('cancelled', 'draft'),
                 ))
 
+
     @staticmethod
     def default_company():
+
         return Transaction().context.get('company')
 
     @fields.depends('company')
@@ -450,10 +452,10 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         _logger.info('Sending report %s to AEAT SII', self.id)
         headers = mapping.get_headers(
             name=self.company.party.name,
-            vat=self.company_vat,
+            vat=self.company.party.vat_number,
             comm_kind=self.operation_type)
         pool = Pool()
-        mapper = IssuedTrytonInvoiceMapper(pool=pool)
+        mapper = pool.get('aeat.sii.issued.invoice.mapper')(pool=pool)
         res = None
         with self.company.tmp_ssl_credentials() as (crt, key):
             srv = service.bind_issued_invoices_service(crt, key, test=True)
@@ -477,10 +479,10 @@ class SIIReport(Workflow, ModelSQL, ModelView):
     def delete_issued_invoices(self):
         headers = mapping.get_headers(
             name=self.company.party.name,
-            vat=self.company_vat,
+            vat=self.company.party.vat_number,
             comm_kind=self.operation_type)
         pool = Pool()
-        mapper = IssuedTrytonInvoiceMapper(pool=pool)
+        mapper = pool.get('aeat.sii.issued.invoice.mapper')(pool=pool)
         res = None
         with self.company.tmp_ssl_credentials() as (crt, key):
             srv = service.bind_issued_invoices_service(crt, key, test=True)
@@ -507,7 +509,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         Invoice = pool.get('account.invoice')
         headers = mapping.get_headers(
             name=self.company.party.name,
-            vat=self.company_vat,
+            vat=self.company.party.vat_number,
             comm_kind=self.operation_type)
 
         with self.company.tmp_ssl_credentials() as (crt, key):
@@ -554,10 +556,10 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         _logger.info('Sending report %s to AEAT SII', self.id)
         headers = mapping.get_headers(
             name=self.company.party.name,
-            vat=self.company_vat,
+            vat=self.company.party.vat_number,
             comm_kind=self.operation_type)
         pool = Pool()
-        mapper = RecievedTrytonInvoiceMapper(pool=pool)
+        mapper = pool.get('aeat.sii.recieved.invoice.mapper')(pool=pool)
         res = None
         with self.company.tmp_ssl_credentials() as (crt, key):
             srv = service.bind_recieved_invoices_service(crt, key, test=True)
@@ -581,10 +583,10 @@ class SIIReport(Workflow, ModelSQL, ModelView):
     def delete_recieved_invoices(self):
         headers = mapping.get_headers(
             name=self.company.party.name,
-            vat=self.company_vat,
+            vat=self.company.party.vat_number,
             comm_kind=self.operation_type)
         pool = Pool()
-        mapper = RecievedTrytonInvoiceMapper(pool=pool)
+        mapper = pool.get('aeat.sii.recieved.invoice.mapper')(pool=pool)
         res = None
         with self.company.tmp_ssl_credentials() as (crt, key):
             srv = service.bind_recieved_invoices_service(crt, key, test=True)
@@ -611,7 +613,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         Invoice = pool.get('account.invoice')
         headers = mapping.get_headers(
             name=self.company.party.name,
-            vat=self.company_vat,
+            vat=self.company.party.vat_number,
             comm_kind=self.operation_type)
 
         with self.company.tmp_ssl_credentials() as (crt, key):
@@ -656,10 +658,10 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         })
 
 
-class BaseTrytonInvoiceMapper(object):
+class BaseTrytonInvoiceMapper(Model):
 
     def __init__(self, *args, **kwargs):
-        super(BaseTrytonInvoiceMapper, self).__init__()
+        super(BaseTrytonInvoiceMapper, self).__init__(*args, **kwargs)
         self.pool = Pool()
 
     year = attrgetter('move.period.fiscalyear.name')
@@ -674,12 +676,9 @@ class BaseTrytonInvoiceMapper(object):
     counterpart_id_type = attrgetter('party.identifier_type')
     counterpart_country = attrgetter('party.vat_country')
     counterpart_id = counterpart_nif
-    taxes = attrgetter('taxes')
     tax_rate = attrgetter('tax.rate')
     tax_base = attrgetter('base')
     tax_amount = attrgetter('amount')
-    tax_equivalence_surcharge_rate = callback_utils.fixed_value(None)
-    tax_equivalence_surcharge_amount = callback_utils.fixed_value(None)
 
     def description(self, invoice):
         return (
@@ -700,6 +699,41 @@ class BaseTrytonInvoiceMapper(object):
                 if isinstance(line.origin, SaleLine)
             ])
 
+    def taxes(self, invoice):
+        return [
+            invoice_tax for invoice_tax in invoice.taxes
+            if (
+                invoice_tax.tax.sii_subjected_key == 'S1' and
+                not invoice_tax.tax.recargo_equivalencia
+            )
+        ]
+
+    def _tax_equivalence_surcharge(self, invoice_tax):
+        parent_tax = invoice_tax.tax.parent
+        surcharge_taxes = [
+            sibling
+            for sibling in invoice_tax.invoice.taxes
+            if (
+                sibling.tax.recargo_equivalencia and
+                sibling.tax.parent.id == parent_tax.id
+            )
+        ]
+        if surcharge_taxes:
+            (invoice_tax,) = surcharge_taxes
+            return invoice_tax
+        else:
+            return None
+
+    def tax_equivalence_surcharge_rate(self, invoice_tax):
+        invoice_tax = self._tax_equivalence_surcharge(invoice_tax)
+        if invoice_tax:
+            return self.tax_rate(invoice_tax)
+
+    def tax_equivalence_surcharge_amount(self, invoice_tax):
+        invoice_tax = self._tax_equivalence_surcharge(invoice_tax)
+        if invoice_tax:
+            return self.tax_amount(invoice_tax)
+
 
 class IssuedTrytonInvoiceMapper(
     mapping.IssuedInvoiceMapper, BaseTrytonInvoiceMapper
@@ -707,6 +741,7 @@ class IssuedTrytonInvoiceMapper(
     """
     Tryton Issued Invoice to AEAT mapper
     """
+    __name__ = 'aeat.sii.issued.invoice.mapper'
     serial_number = attrgetter('number')
     specialkey_or_trascendence = attrgetter('sii_issued_key')
 
@@ -717,6 +752,7 @@ class RecievedTrytonInvoiceMapper(
     """
     Tryton Recieved Invoice to AEAT mapper
     """
+    __name__ = 'aeat.sii.recieved.invoice.mapper'
     serial_number = attrgetter('reference')
     specialkey_or_trascendence = attrgetter('sii_received_key')
     move_date = attrgetter('move.date')
@@ -743,14 +779,3 @@ class SIIReportLine(ModelSQL, ModelView):
     @staticmethod
     def default_company():
         return Transaction().context.get('company')
-
-    @classmethod
-    def copy(cls, records, default=None):
-        if default is None:
-            default = {}
-        else:
-            default = default.copy()
-        default['state'] = None
-        default['communication_code'] = None
-        default['communication_msg'] = None
-        return super(SIIReportLine, cls).copy(records, default=default)
