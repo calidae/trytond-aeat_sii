@@ -1,0 +1,820 @@
+#
+msgid ""
+msgstr "Content-Type: text/plain; charset=utf-8\n"
+
+msgctxt "error:aeat.sii.load_pkcs12:"
+msgid "Unable to load PKCS12: %s"
+msgstr "No se ha podido cargar PKCS12: %s"
+
+msgctxt "error:company.company:"
+msgid "Missing Fernet key configuration"
+msgstr "Falta clave Fernet en la configuración"
+
+msgctxt "error:company.company:"
+msgid "Missing PEM certificate"
+msgstr "Falta certificado PEM"
+
+msgctxt "field:account.invoice,sii_book_key:"
+msgid "SII Book Key"
+msgstr "Clave de Libro"
+
+msgctxt "field:account.invoice,sii_excemption_cause:"
+msgid "Excemption Cause"
+msgstr "Exención"
+
+msgctxt "field:account.invoice,sii_intracomunity_key:"
+msgid "SII Intracommunity Key"
+msgstr "Clave Intracomunitaria SII"
+
+msgctxt "field:account.invoice,sii_issued_key:"
+msgid "SII Issued Key"
+msgstr "Clave facturas emitidas"
+
+msgctxt "field:account.invoice,sii_operation_key:"
+msgid "SII Operation Key"
+msgstr "Clave operación"
+
+msgctxt "field:account.invoice,sii_received_key:"
+msgid "SII Recived Key"
+msgstr "SII Clave recibidas"
+
+msgctxt "field:account.invoice,sii_records:"
+msgid "Sii Report Lines"
+msgstr "Sii Linias"
+
+msgctxt "field:account.invoice,sii_state:"
+msgid "SII State"
+msgstr "Estado SII"
+
+msgctxt "field:account.invoice,sii_subjected:"
+msgid "Subjected"
+msgstr "Sujeta"
+
+msgctxt "field:aeat.sii.issued.invoice.mapper,id:"
+msgid "ID"
+msgstr "ID"
+
+msgctxt "field:aeat.sii.load_pkcs12.start,id:"
+msgid "ID"
+msgstr "ID"
+
+msgctxt "field:aeat.sii.load_pkcs12.start,password:"
+msgid "Password"
+msgstr "Contraseña"
+
+msgctxt "field:aeat.sii.load_pkcs12.start,pfx:"
+msgid "PFX File"
+msgstr "Archivo PFX "
+
+msgctxt "field:aeat.sii.recieved.invoice.mapper,id:"
+msgid "ID"
+msgstr "ID"
+
+msgctxt "field:aeat.sii.report,book:"
+msgid "Book"
+msgstr "Libro"
+
+msgctxt "field:aeat.sii.report,communication_state:"
+msgid "Communication State"
+msgstr "Estado comunicación"
+
+msgctxt "field:aeat.sii.report,company:"
+msgid "Company"
+msgstr "Empresa"
+
+msgctxt "field:aeat.sii.report,company_vat:"
+msgid "VAT"
+msgstr "NIF"
+
+msgctxt "field:aeat.sii.report,create_date:"
+msgid "Create Date"
+msgstr "Fecha de creación"
+
+msgctxt "field:aeat.sii.report,create_uid:"
+msgid "Create User"
+msgstr "Usuario de creación"
+
+msgctxt "field:aeat.sii.report,csv:"
+msgid "CSV"
+msgstr "CSV"
+
+msgctxt "field:aeat.sii.report,currency:"
+msgid "Currency"
+msgstr "Moneda"
+
+msgctxt "field:aeat.sii.report,fiscalyear:"
+msgid "Fiscal Year"
+msgstr "Ejercicio fiscal"
+
+msgctxt "field:aeat.sii.report,id:"
+msgid "ID"
+msgstr "ID"
+
+msgctxt "field:aeat.sii.report,lines:"
+msgid "Lines"
+msgstr "Líneas"
+
+msgctxt "field:aeat.sii.report,operation_type:"
+msgid "Operation Type"
+msgstr "Tipo de operación"
+
+msgctxt "field:aeat.sii.report,period:"
+msgid "Period"
+msgstr "Período"
+
+msgctxt "field:aeat.sii.report,rec_name:"
+msgid "Name"
+msgstr "Nombre"
+
+msgctxt "field:aeat.sii.report,state:"
+msgid "State"
+msgstr "Estado"
+
+msgctxt "field:aeat.sii.report,version:"
+msgid "Version"
+msgstr "Versión"
+
+msgctxt "field:aeat.sii.report,write_date:"
+msgid "Write Date"
+msgstr "Fecha de modificación"
+
+msgctxt "field:aeat.sii.report,write_uid:"
+msgid "Write User"
+msgstr "Usuario modificación"
+
+msgctxt "field:aeat.sii.report.lines,communication_code:"
+msgid "Communication Code"
+msgstr "Código de comunicación"
+
+msgctxt "field:aeat.sii.report.lines,communication_msg:"
+msgid "Communication Message"
+msgstr "Mensaje de comunicación"
+
+msgctxt "field:aeat.sii.report.lines,company:"
+msgid "Company"
+msgstr "Empresa"
+
+msgctxt "field:aeat.sii.report.lines,create_date:"
+msgid "Create Date"
+msgstr "Fecha de creación"
+
+msgctxt "field:aeat.sii.report.lines,create_uid:"
+msgid "Create User"
+msgstr "Usuario de creación"
+
+msgctxt "field:aeat.sii.report.lines,id:"
+msgid "ID"
+msgstr "ID"
+
+msgctxt "field:aeat.sii.report.lines,invoice:"
+msgid "Invoice"
+msgstr "Factura"
+
+msgctxt "field:aeat.sii.report.lines,rec_name:"
+msgid "Name"
+msgstr "Nombre"
+
+msgctxt "field:aeat.sii.report.lines,report:"
+msgid "Issued Report"
+msgstr "Informe Emitidas"
+
+msgctxt "field:aeat.sii.report.lines,state:"
+msgid "State"
+msgstr "Estado"
+
+msgctxt "field:aeat.sii.report.lines,write_date:"
+msgid "Write Date"
+msgstr "Fecha de modificación"
+
+msgctxt "field:aeat.sii.report.lines,write_uid:"
+msgid "Write User"
+msgstr "Usuario modificación"
+
+msgctxt "field:company.company,encrypted_private_key:"
+msgid "Encrypted Private Key"
+msgstr "Clave privada encriptada"
+
+msgctxt "field:company.company,pem_certificate:"
+msgid "PEM Certificate"
+msgstr "Certificado PEM"
+
+msgctxt "field:company.company,private_key:"
+msgid "Private Key"
+msgstr "Clave privada"
+
+msgctxt "field:party.party,identifier_type:"
+msgid "Identifier Type"
+msgstr "Tipos de Identificador"
+
+msgctxt "model:aeat.sii.issued.invoice.mapper,name:"
+msgid "Tryton Issued Invoice to AEAT mapper"
+msgstr "Correspondencia Tryton - Aeat facturas emitidas"
+
+msgctxt "model:aeat.sii.load_pkcs12.start,name:"
+msgid "Load PKCS12 Start"
+msgstr "Cargar PKCS12"
+
+msgctxt "model:aeat.sii.recieved.invoice.mapper,name:"
+msgid "Tryton Recieved Invoice to AEAT mapper"
+msgstr "Correspondencia tryton - AEAT facturas recibidas"
+
+msgctxt "model:aeat.sii.report,name:"
+msgid "SII Report"
+msgstr "Informe SII"
+
+msgctxt "model:aeat.sii.report.lines,name:"
+msgid "AEAT SII Issued"
+msgstr "Emitidas"
+
+msgctxt "model:ir.action,name:act_aeat_sii_intra_report"
+msgid "SII Report Intracommunity"
+msgstr "Informe Intracomunitarias"
+
+msgctxt "model:ir.action,name:act_aeat_sii_invest_report"
+msgid "SII Report Invest"
+msgstr "Informe Bienes"
+
+msgctxt "model:ir.action,name:act_aeat_sii_issued_report"
+msgid "SII Report Issued"
+msgstr "Informe Emitidas"
+
+msgctxt "model:ir.action,name:act_aeat_sii_load_pkcs12"
+msgid "Load PKCS12"
+msgstr "Cargar PKCS12"
+
+msgctxt "model:ir.action,name:act_aeat_sii_received_report"
+msgid "SII Report Received"
+msgstr "Informe Recibidas"
+
+msgctxt "model:ir.action,name:act_aeat_sii_report"
+msgid "SII Report"
+msgstr "Informe SII"
+
+msgctxt "model:ir.action,name:act_aeat_sii_report_line"
+msgid "AEAT SII Report Lines"
+msgstr "Líneas informe SII"
+
+msgctxt "model:ir.action,name:act_aeat_sii_report_lines"
+msgid "SII Report Lines"
+msgstr "Líneas informe SII"
+
+msgctxt "model:ir.ui.menu,name:menu_aeat_sii_report"
+msgid "AEAT SII Report"
+msgstr "Informe AEAT SII"
+
+msgctxt "model:ir.ui.menu,name:menu_aeat_sii_report_intra"
+msgid "AEAT SII Report Intracommunity"
+msgstr "Libro Facturas intracomunitarias"
+
+msgctxt "model:ir.ui.menu,name:menu_aeat_sii_report_invest"
+msgid "AEAT SII Report Invest"
+msgstr "Libro Facturas Bienes de Inversión"
+
+msgctxt "model:ir.ui.menu,name:menu_aeat_sii_report_issued"
+msgid "AEAT SII Report Issued"
+msgstr "Libro Facturas Emitidas"
+
+msgctxt "model:ir.ui.menu,name:menu_aeat_sii_report_menu"
+msgid "AEAT SII"
+msgstr "AEAT SII"
+
+msgctxt "model:ir.ui.menu,name:menu_aeat_sii_report_received"
+msgid "AEAT SII Report Received"
+msgstr "Libro Facturas recibidas"
+
+msgctxt "model:res.group,name:group_aeat_sii_admin"
+msgid "AEAT SII Administration"
+msgstr "Administración AEAT SII"
+
+msgctxt "selection:account.invoice,sii_book_key:"
+msgid ""
+msgstr " "
+
+msgctxt "selection:account.invoice,sii_book_key:"
+msgid "IGIC Investment Goods"
+msgstr "IGIC: Bienes de Inversión"
+
+msgctxt "selection:account.invoice,sii_book_key:"
+msgid "IGIC Issued Invoices"
+msgstr "IGIC: Facturas emitidas"
+
+msgctxt "selection:account.invoice,sii_book_key:"
+msgid "IGIC Received Invoices"
+msgstr "IGIC: Facturas recibidas"
+
+msgctxt "selection:account.invoice,sii_book_key:"
+msgid "Investment Goods"
+msgstr "Bienes de inversión"
+
+msgctxt "selection:account.invoice,sii_book_key:"
+msgid "Issued Invoices"
+msgstr "Facturas emitidas"
+
+msgctxt "selection:account.invoice,sii_book_key:"
+msgid "Particular Intracommunity Operations"
+msgstr "Determinadas operaciones intracomunitarias"
+
+msgctxt "selection:account.invoice,sii_book_key:"
+msgid "Received Invoices"
+msgstr "Facturas recibidas"
+
+msgctxt "selection:account.invoice,sii_excemption_cause:"
+msgid ""
+msgstr " "
+
+msgctxt "selection:account.invoice,sii_excemption_cause:"
+msgid "Excempt. Article 20"
+msgstr "Exenta por el artículo 20"
+
+msgctxt "selection:account.invoice,sii_excemption_cause:"
+msgid "Excempt. Article 21"
+msgstr "Exenta por el artículo 21"
+
+msgctxt "selection:account.invoice,sii_excemption_cause:"
+msgid "Excempt. Article 22"
+msgstr "Exenta por el artículo 22"
+
+msgctxt "selection:account.invoice,sii_excemption_cause:"
+msgid "Excempt. Article 24"
+msgstr "Exenta por el artículo 24"
+
+msgctxt "selection:account.invoice,sii_excemption_cause:"
+msgid "Excempt. Article 25"
+msgstr "Exenta por el artículo 25"
+
+msgctxt "selection:account.invoice,sii_excemption_cause:"
+msgid "Excempt. Other"
+msgstr "Exenta, otros"
+
+msgctxt "selection:account.invoice,sii_intracomunity_key:"
+msgid ""
+msgstr " "
+
+msgctxt "selection:account.invoice,sii_intracomunity_key:"
+msgid ""
+"The sending or receiving of goods for\n"
+"the execution of the partial\n"
+"reports or works Mentioned in \n"
+"article 70, paragraph one, number 7,\n"
+"of the Tax Law (Law 37/1992)."
+msgstr ""
+"El envío o recepción de bienes para la realización \n"
+"de los informes parciales o trabajos mencionados \n"
+"en el artículo 70, apartado uno, número 7º, \n"
+"de la Ley del Impuesto (Ley 37/1992)."
+
+msgctxt "selection:account.invoice,sii_intracomunity_key:"
+msgid ""
+"Transfers of goods and intra-Community\n"
+"acquisitions of goods covered by In \n"
+"articles 9, paragraph 3, and 16, \n"
+"section 2, of the \n"
+"Tax Law (Law 37/1992)."
+msgstr ""
+"Las transferencias de bienes y las adquisiciones \n"
+"intracomunitarias de bienes comprendidas\n"
+"en los artículos 9, apartado 3º, y 16, apartado\n"
+" 2º, de la Ley del Impuesto (Ley 37/1992)."
+
+msgctxt "selection:account.invoice,sii_issued_key:"
+msgid ""
+msgstr " "
+
+msgctxt "selection:account.invoice,sii_issued_key:"
+msgid "Business premises lease transactionssubject to withholding"
+msgstr "Operaciones de arrendamiento de local de negocio sujetas a retención"
+
+msgctxt "selection:account.invoice,sii_issued_key:"
+msgid ""
+"Collection on behalf of third parties of\n"
+"professional fees or rights derived from\n"
+"industrial property, author or others..."
+msgstr ""
+"Cobros por cuenta de terceros de honorarios profesionales o de derechos derivados de\n"
+"la propiedad industrial, de autor u otros por cuenta de sus socios, asociados o\n"
+"colegiados efectuados por sociedades, asociaciones, colegios profesionales u otras\n"
+"entidades que realicen estas funciones de cobro."
+
+msgctxt "selection:account.invoice,sii_issued_key:"
+msgid "Common System Operation"
+msgstr "Operación de régimen general."
+
+msgctxt "selection:account.invoice,sii_issued_key:"
+msgid "Export"
+msgstr "Exportación"
+
+msgctxt "selection:account.invoice,sii_issued_key:"
+msgid ""
+"Invoice with VAT pending accrual -\n"
+"operations of successive tract"
+msgstr ""
+"Factura con IVA pendiente de devengo en operaciones de tracto sucesivo."
+
+msgctxt "selection:account.invoice,sii_issued_key:"
+msgid ""
+"Invoice with tax pending of accrual\n"
+"(certifications of works whose addresses\n"
+"is a Public Administration)"
+msgstr ""
+"Factura con IVA pendiente de devengo en certificaciones de obra cuyo destinatario sea\n"
+"una Administración Pública."
+
+msgctxt "selection:account.invoice,sii_issued_key:"
+msgid ""
+"Invoicing of travel agency services acting\n"
+"as mediators in the name and for the account\n"
+"of others (D.A.4a RD1619 2012)"
+msgstr ""
+"Facturación de las prestaciones de servicios de agencias de viaje que actúan como\n"
+"mediadoras en nombre y por cuenta ajena (D.A.4ª RD1619/2012)"
+
+msgctxt "selection:account.invoice,sii_issued_key:"
+msgid ""
+"Lease transactions of business premises\n"
+"subject to and not subject to withholding"
+msgstr ""
+"Operaciones de arrendamiento de local de negocio sujetas y no sujetas a "
+"retención."
+
+msgctxt "selection:account.invoice,sii_issued_key:"
+msgid "Non-retention business lease operations"
+msgstr ""
+"Operaciones de arrendamiento de local de negocio no sujetos a retención."
+
+msgctxt "selection:account.invoice,sii_issued_key:"
+msgid "Operations subject to IPSI / IGIC"
+msgstr ""
+"Operaciones sujetas al IPSI / IGIC (Impuesto sobre la Producción, los Servicios y la\n"
+"Importación / Impuesto General Indirecto Canario)."
+
+msgctxt "selection:account.invoice,sii_issued_key:"
+msgid ""
+"Operations to which the special arrangements for\n"
+"second-hand goods, art objects, antiques and collectors\n"
+"articles apply (135-139 LIVA)"
+msgstr ""
+"Operaciones a las que se aplique el régimen especial de bienes usados, objetos de\n"
+"arte, antigüedades y objetos de colección"
+
+msgctxt "selection:account.invoice,sii_issued_key:"
+msgid "Special group of entities in VAT (Advanced Level)"
+msgstr "Régimen especial grupo de entidades en IVA (Nivel Avanzado)"
+
+msgctxt "selection:account.invoice,sii_issued_key:"
+msgid "Special investment gold regime"
+msgstr "Régimen especial del oro de inversión."
+
+msgctxt "selection:account.invoice,sii_issued_key:"
+msgid "Special scheme for cash"
+msgstr "Régimen especial del criterio de caja."
+
+msgctxt "selection:account.invoice,sii_issued_key:"
+msgid "Special travel agencies"
+msgstr "Régimen especial de las agencias de viajes."
+
+msgctxt "selection:account.invoice,sii_operation_key:"
+msgid ""
+msgstr " "
+
+msgctxt "selection:account.invoice,sii_operation_key:"
+msgid "Credit Note"
+msgstr "Factura rectificativa"
+
+msgctxt "selection:account.invoice,sii_operation_key:"
+msgid "Credit Note (Art 80.1 y 80.2)"
+msgstr "Factura rectificativa (Art 80.1 y 80.2)"
+
+msgctxt "selection:account.invoice,sii_operation_key:"
+msgid "Credit Note (Art 80.3)"
+msgstr "Fatura rectificativa  (Art 80.3)"
+
+msgctxt "selection:account.invoice,sii_operation_key:"
+msgid "Credit Note (Art 80.4)"
+msgstr "Facura rectificativa  (Art. 80.4)"
+
+msgctxt "selection:account.invoice,sii_operation_key:"
+msgid "Credit Note on simplified Invoices"
+msgstr "Factura Rectificativa en facturas simplificadas"
+
+msgctxt "selection:account.invoice,sii_operation_key:"
+msgid "Import (DUA)"
+msgstr "Importaciones (DUA)"
+
+msgctxt "selection:account.invoice,sii_operation_key:"
+msgid "Invoice"
+msgstr "Factura"
+
+msgctxt "selection:account.invoice,sii_operation_key:"
+msgid "Invoice Summary Account Move"
+msgstr "Asiento resumen de facturas"
+
+msgctxt "selection:account.invoice,sii_operation_key:"
+msgid ""
+"Invoice issued as a substitute\n"
+"for simplified invoices\n"
+"Billed and declared\n"
+msgstr ""
+"Factura emitida en sustitución de facturas simplificadas\n"
+"facturadas y declaradas"
+
+msgctxt "selection:account.invoice,sii_operation_key:"
+msgid "Other accounting documents"
+msgstr "Justificantes contables"
+
+msgctxt "selection:account.invoice,sii_operation_key:"
+msgid "Simplified Invoice"
+msgstr "Factura simplificada"
+
+msgctxt "selection:account.invoice,sii_received_key:"
+msgid ""
+msgstr " "
+
+msgctxt "selection:account.invoice,sii_received_key:"
+msgid "Business premises lease operations"
+msgstr "Operaciones de arrendamiento de local de negocio."
+
+msgctxt "selection:account.invoice,sii_received_key:"
+msgid "Common system operation"
+msgstr "Operación de régimen general"
+
+msgctxt "selection:account.invoice,sii_received_key:"
+msgid "Intra-Community acquisitions of goods and services"
+msgstr ""
+"Adquisiciones intracomunitarias de bienes y prestaciones de servicios."
+
+msgctxt "selection:account.invoice,sii_received_key:"
+msgid ""
+"Invoice corresponding to an import\n"
+"(reported without associating with a DUA)"
+msgstr ""
+"Factura correspondiente a una importación (informada sin asociar a un DUA)."
+
+msgctxt "selection:account.invoice,sii_received_key:"
+msgid "Operations by which employers satisfy REAGYP compensation"
+msgstr ""
+"Operaciones por las que los empresarios satisfacen compensaciones en las\n"
+"adquisiciones a personas acogidas al Régimen especial de la agricultura, ganaderia y\n"
+"pesca."
+
+msgctxt "selection:account.invoice,sii_received_key:"
+msgid "Operations subject to IPSI / IGIC"
+msgstr ""
+"Operaciones sujetas al IPSI / IGIC (Impuesto sobre la\n"
+"Producción, los Servicios y la Importación / Impuesto\n"
+" General Indirecto Canario)."
+
+msgctxt "selection:account.invoice,sii_received_key:"
+msgid ""
+"Operations to which the special arrangements\n"
+"for second-hand goods, art objects, antiques\n"
+"and collectors articles apply (135-139 LIVA)"
+msgstr ""
+"Operaciones a las que se aplique el régimen especial de bienes usados, objetos de\n"
+"arte, antigüedades y objetos de colección."
+
+msgctxt "selection:account.invoice,sii_received_key:"
+msgid "Special group of entities in VAT (Advanced Level)"
+msgstr "Régimen especial grupo de entidades en IVA (Nivel Avanzado)"
+
+msgctxt "selection:account.invoice,sii_received_key:"
+msgid "Special investment gold regime"
+msgstr "Régimen especial del oro de inversión."
+
+msgctxt "selection:account.invoice,sii_received_key:"
+msgid "Special scheme for cash"
+msgstr "Régimen especial del criterio de caja."
+
+msgctxt "selection:account.invoice,sii_received_key:"
+msgid "Special travel agencies"
+msgstr "Régimen especial de las agencias de viajes"
+
+msgctxt "selection:account.invoice,sii_state:"
+msgid ""
+msgstr " "
+
+msgctxt "selection:account.invoice,sii_state:"
+msgid "Accepted"
+msgstr "Aceptado"
+
+msgctxt "selection:account.invoice,sii_state:"
+msgid "Accepted "
+msgstr "Aceptado"
+
+msgctxt "selection:account.invoice,sii_state:"
+msgid "Accepted with Errors"
+msgstr "Aceptada con errores"
+
+msgctxt "selection:account.invoice,sii_state:"
+msgid "Accepted with Errors "
+msgstr "Aceptada con errores"
+
+msgctxt "selection:account.invoice,sii_state:"
+msgid "Deleted"
+msgstr "Borrada"
+
+msgctxt "selection:account.invoice,sii_state:"
+msgid "Rejected"
+msgstr "Rechazado"
+
+msgctxt "selection:account.invoice,sii_subjected:"
+msgid ""
+msgstr " "
+
+msgctxt "selection:account.invoice,sii_subjected:"
+msgid "Subjected - Not Excempt"
+msgstr "Sujeto - No exento."
+
+msgctxt "selection:account.invoice,sii_subjected:"
+msgid "Subjected - Not Excempt ,  Inv. Suj. Pass"
+msgstr "No exenta - Con Inversion sujeto pasivo"
+
+msgctxt "selection:aeat.sii.report,book:"
+msgid "IGIC Investment Goods"
+msgstr "IGIC: Bienes de Inversión"
+
+msgctxt "selection:aeat.sii.report,book:"
+msgid "IGIC Issued Invoices"
+msgstr "IGIC: Bienes de Inversión"
+
+msgctxt "selection:aeat.sii.report,book:"
+msgid "IGIC Received Invoices"
+msgstr "IGIC: Facturas recibidas"
+
+msgctxt "selection:aeat.sii.report,book:"
+msgid "Investment Goods"
+msgstr "Bienes de inversión"
+
+msgctxt "selection:aeat.sii.report,book:"
+msgid "Issued Invoices"
+msgstr "Facturas emitidas"
+
+msgctxt "selection:aeat.sii.report,book:"
+msgid "Particular Intracommunity Operations"
+msgstr "Determinadas operaciones Intracomunitarias"
+
+msgctxt "selection:aeat.sii.report,book:"
+msgid "Received Invoices"
+msgstr "Facturas recibidas"
+
+msgctxt "selection:aeat.sii.report,communication_state:"
+msgid ""
+msgstr ""
+
+msgctxt "selection:aeat.sii.report,communication_state:"
+msgid "Accepted"
+msgstr "Aceptado"
+
+msgctxt "selection:aeat.sii.report,communication_state:"
+msgid "Partially Accepted"
+msgstr "Aceptada parcialmente"
+
+msgctxt "selection:aeat.sii.report,communication_state:"
+msgid "Rejected"
+msgstr "Rechazado"
+
+msgctxt "selection:aeat.sii.report,operation_type:"
+msgid "Delete Invoices"
+msgstr "Borrar facturas"
+
+msgctxt "selection:aeat.sii.report,operation_type:"
+msgid "Modify Invoices"
+msgstr "Modificar facturas"
+
+msgctxt "selection:aeat.sii.report,operation_type:"
+msgid "New Invoices"
+msgstr "Nuevas facturas"
+
+msgctxt "selection:aeat.sii.report,operation_type:"
+msgid "Query Invoices"
+msgstr "Consultar facturas"
+
+msgctxt "selection:aeat.sii.report,state:"
+msgid "Cancelled"
+msgstr "Cancelado"
+
+msgctxt "selection:aeat.sii.report,state:"
+msgid "Confirmed"
+msgstr "Confirmados"
+
+msgctxt "selection:aeat.sii.report,state:"
+msgid "Done"
+msgstr "Realizar"
+
+msgctxt "selection:aeat.sii.report,state:"
+msgid "Draft"
+msgstr "Borrador"
+
+msgctxt "selection:aeat.sii.report,state:"
+msgid "Sent"
+msgstr "Enviado"
+
+msgctxt "selection:aeat.sii.report,version:"
+msgid "0.7"
+msgstr "0.7"
+
+msgctxt "selection:aeat.sii.report.lines,state:"
+msgid ""
+msgstr " "
+
+msgctxt "selection:aeat.sii.report.lines,state:"
+msgid "Accepted"
+msgstr "Aceptado"
+
+msgctxt "selection:aeat.sii.report.lines,state:"
+msgid "Accepted "
+msgstr "Aceptado"
+
+msgctxt "selection:aeat.sii.report.lines,state:"
+msgid "Accepted with Errors"
+msgstr "Aceptada con errores"
+
+msgctxt "selection:aeat.sii.report.lines,state:"
+msgid "Accepted with Errors "
+msgstr "Aceptada con errores"
+
+msgctxt "selection:aeat.sii.report.lines,state:"
+msgid "Deleted"
+msgstr "Borrada"
+
+msgctxt "selection:aeat.sii.report.lines,state:"
+msgid "Rejected"
+msgstr "Rechazado"
+
+msgctxt "selection:party.party,identifier_type:"
+msgid "Certificate of fiscal resident"
+msgstr "Certificado de residencia"
+
+msgctxt "selection:party.party,identifier_type:"
+msgid "NIF"
+msgstr "Nif"
+
+msgctxt "selection:party.party,identifier_type:"
+msgid "Not on the Census"
+msgstr "No censado"
+
+msgctxt "selection:party.party,identifier_type:"
+msgid ""
+"Official Document Emmited by\n"
+"the Country of Residence"
+msgstr ""
+"Documento oficial de identificación expedido per el país de residencia."
+
+msgctxt "selection:party.party,identifier_type:"
+msgid "Other proving document"
+msgstr "Otro documento provatorio"
+
+msgctxt "selection:party.party,identifier_type:"
+msgid "Passport"
+msgstr "Pasaporte"
+
+msgctxt "view:account.invoice:"
+msgid "Aeat SII"
+msgstr "AEAT SII"
+
+msgctxt "view:aeat.sii.load_pkcs12.start:"
+msgid "Load PKCS12"
+msgstr "Cargar PKCS12"
+
+msgctxt "view:aeat.sii.report.lines:"
+msgid "AEAT SII Issued"
+msgstr "Emitidas"
+
+msgctxt "view:aeat.sii.report.lines:"
+msgid "AEAT SII Issued Lines"
+msgstr "Línies facturas emitidas"
+
+msgctxt "view:aeat.sii.report:"
+msgid "AEAT SII Issued Report"
+msgstr "Libro Facturas emitidas"
+
+msgctxt "view:aeat.sii.report:"
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgctxt "view:aeat.sii.report:"
+msgid "Confirm"
+msgstr "Confirmar"
+
+msgctxt "view:aeat.sii.report:"
+msgid "Draft"
+msgstr "Borrador"
+
+msgctxt "view:aeat.sii.report:"
+msgid "Load Invoices"
+msgstr "Cargar facturas"
+
+msgctxt "view:aeat.sii.report:"
+msgid "Send"
+msgstr "Enviar"
+
+msgctxt "view:company.company:"
+msgid "Certificate"
+msgstr "Certificado"
+
+msgctxt "wizard_button:aeat.sii.load_pkcs12,start,end:"
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgctxt "wizard_button:aeat.sii.load_pkcs12,start,load:"
+msgid "Load"
+msgstr "Cargar"
