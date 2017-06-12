@@ -667,7 +667,7 @@ class BaseTrytonInvoiceMapper(Model):
     issue_date = attrgetter('invoice_date')
     invoice_kind = attrgetter('sii_operation_key')
     rectified_invoice_kind = callback_utils.fixed_value('I')
-    not_exempt_kind = attrgetter('sii_subjected')
+    not_exempt_kind = attrgetter('sii_subjected_key')
     counterpart_name = attrgetter('party.name')
     counterpart_nif = attrgetter('party.vat_number')
     counterpart_id_type = attrgetter('party.identifier_type')
