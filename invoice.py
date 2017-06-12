@@ -33,8 +33,8 @@ class Invoice:
         states={
             'invisible': Eval('type').in_(['out_invoice', 'out_credit_note']),
         })
-    sii_subjected = fields.Selection(IVA_SUBJECTED, 'Subjected')
-    sii_excemption_cause = fields.Selection(EXCEMPTION_CAUSE,
+    sii_subjected_key = fields.Selection(IVA_SUBJECTED, 'Subjected')
+    sii_excemption_key = fields.Selection(EXCEMPTION_CAUSE,
         'Excemption Cause')
     sii_intracomunity_key = fields.Selection(INTRACOMUNITARY_TYPE,
         'SII Intracommunity Key',
@@ -51,8 +51,8 @@ class Invoice:
     def __setup__(cls):
         super(Invoice, cls).__setup__()
         cls._check_modify_exclude += ['sii_book_key', 'sii_operation_key',
-            'sii_received_key', 'sii_issued_key', 'sii_subjected',
-            'sii_excemption_cause', 'sii_intracomunity_key']
+            'sii_received_key', 'sii_issued_key', 'sii_subjected_key',
+            'sii_excemption_key', 'sii_intracomunity_key']
 
     @classmethod
     def search_sii_state(cls, name, clause):
@@ -107,7 +107,7 @@ class Invoice:
     def _credit(self):
         res = super(Invoice, self)._credit()
         for field in ('sii_book_key', 'sii_issued_key', 'sii_received_key',
-                'sii_subjected', 'sii_excemption_cause',
+                'sii_subjected_key', 'sii_excemption_key',
                 'sii_intracomunity_key'):
             res[field] = getattr(self, field)
 
@@ -115,11 +115,11 @@ class Invoice:
         return res
 
     @fields.depends('sii_book_key', 'sii_issued_key', 'sii_received_key',
-            'sii_subjected', 'sii_excemption_cause', 'sii_intracomunity_key')
+            'sii_subjected_key', 'sii_excemption_key', 'sii_intracomunity_key')
     def _on_change_lines_taxes(self):
         res = super(Invoice, self)._on_change_lines_taxes()
         for field in ('sii_book_key', 'sii_issued_key', 'sii_received_key',
-                'sii_subjected', 'sii_excemption_cause',
+                'sii_subjected_key', 'sii_excemption_key',
                 'sii_intracomunity_key'):
             if getattr(self, field):
                 return res
@@ -128,7 +128,7 @@ class Invoice:
         if not tax:
             return res
         for field in ('sii_book_key', 'sii_issued_key', 'sii_received_key',
-                'sii_subjected', 'sii_excemption_cause',
+                'sii_subjected_key', 'sii_excemption_key',
                 'sii_intracomunity_key'):
             res[field] = getattr(tax, field)
         return res
