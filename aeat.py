@@ -18,7 +18,7 @@ from pyAEATsii import service
 from pyAEATsii import mapping
 from pyAEATsii import callback_utils
 
-from trytond.model import ModelSQL, ModelView, fields, Workflow
+from trytond.model import ModelSQL, ModelView, Model, fields, Workflow
 from trytond.model import Model
 from trytond.pyson import Eval
 from trytond.pool import Pool
@@ -340,7 +340,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         return Transaction().context.get('company')
 
     @fields.depends('company')
-    def on_change_with_currency(self, name):
+    def on_change_with_currency(self, name=None):
         if self.company:
             return self.company.currency.id
 
@@ -452,7 +452,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             vat=self.company_vat,
             comm_kind=self.operation_type)
         pool = Pool()
-        mapper = IssuedTrytonInvoiceMapper(pool=pool)
+        mapper = pool.get('aeat.sii.issued.invoice.mapper')(pool=pool)
         res = None
         with self.company.tmp_ssl_credentials() as (crt, key):
             srv = service.bind_issued_invoices_service(crt, key, test=True)
@@ -479,7 +479,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             vat=self.company_vat,
             comm_kind=self.operation_type)
         pool = Pool()
-        mapper = IssuedTrytonInvoiceMapper(pool=pool)
+        mapper = pool.get('aeat.sii.issued.invoice.mapper')(pool=pool)
         res = None
         with self.company.tmp_ssl_credentials() as (crt, key):
             srv = service.bind_issued_invoices_service(crt, key, test=True)
@@ -556,7 +556,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             vat=self.company_vat,
             comm_kind=self.operation_type)
         pool = Pool()
-        mapper = RecievedTrytonInvoiceMapper(pool=pool)
+        mapper = pool.get('aeat.sii.recieved.invoice.mapper')(pool=pool)
         res = None
         with self.company.tmp_ssl_credentials() as (crt, key):
             srv = service.bind_recieved_invoices_service(crt, key, test=True)
@@ -583,7 +583,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             vat=self.company_vat,
             comm_kind=self.operation_type)
         pool = Pool()
-        mapper = RecievedTrytonInvoiceMapper(pool=pool)
+        mapper = pool.get('aeat.sii.recieved.invoice.mapper')(pool=pool)
         res = None
         with self.company.tmp_ssl_credentials() as (crt, key):
             srv = service.bind_recieved_invoices_service(crt, key, test=True)
@@ -655,10 +655,10 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         })
 
 
-class BaseTrytonInvoiceMapper(object):
+class BaseTrytonInvoiceMapper(Model):
 
     def __init__(self, *args, **kwargs):
-        super(BaseTrytonInvoiceMapper, self).__init__()
+        super(BaseTrytonInvoiceMapper, self).__init__(*args, **kwargs)
         self.pool = Pool()
 
     year = attrgetter('move.period.fiscalyear.name')
@@ -706,6 +706,7 @@ class IssuedTrytonInvoiceMapper(
     """
     Tryton Issued Invoice to AEAT mapper
     """
+    __name__ = 'aeat.sii.issued.invoice.mapper'
     serial_number = attrgetter('number')
     specialkey_or_trascendence = attrgetter('sii_issued_key')
 
@@ -716,6 +717,7 @@ class RecievedTrytonInvoiceMapper(
     """
     Tryton Recieved Invoice to AEAT mapper
     """
+    __name__ = 'aeat.sii.recieved.invoice.mapper'
     serial_number = attrgetter('reference')
     specialkey_or_trascendence = attrgetter('sii_received_key')
     move_date = attrgetter('move.date')
