@@ -43,9 +43,6 @@ BOOK_KEY = [
     ('I', 'Investment Goods'),
     ('R', 'Received Invoices'),
     ('U', 'Particular Intracommunity Operations'),
-    ('F', 'IGIC Issued Invoices'),
-    ('J', 'IGIC Investment Goods'),
-    ('S', 'IGIC Received Invoices'),
 ]
 
 OPERATION_KEY = [    # L2_EMI - L2_RECI
