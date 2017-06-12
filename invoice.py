@@ -54,6 +54,20 @@ class Invoice:
             'sii_received_key', 'sii_issued_key', 'sii_subjected_key',
             'sii_excemption_key', 'sii_intracomunity_key']
 
+    @staticmethod
+    def default_sii_book_key():
+        type_ = Transaction().context.get('type', 'out_invoice')
+        if type_.startswith('in_'):
+            return 'R'
+        return 'E'
+
+    @staticmethod
+    def default_sii_operation_key():
+        type_ = Transaction().context.get('type', 'out_invoice')
+        if type_ in ('in_credit_note', 'out_credit_note'):
+            return 'R1'
+        return 'F1'
+
     @classmethod
     def search_sii_state(cls, name, clause):
         pool = Pool()

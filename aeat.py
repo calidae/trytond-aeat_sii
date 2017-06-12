@@ -19,7 +19,6 @@ from pyAEATsii import mapping
 from pyAEATsii import callback_utils
 
 from trytond.model import ModelSQL, ModelView, Model, fields, Workflow
-from trytond.model import Model
 from trytond.pyson import Eval
 from trytond.pool import Pool
 from trytond.transaction import Transaction
@@ -367,6 +366,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         else:
             default = default.copy()
         default['communication_state'] = None
+        default['csv'] = None
         return super(SIIReport, cls).copy(records, default=default)
 
     @classmethod
@@ -664,7 +664,7 @@ class BaseTrytonInvoiceMapper(Model):
     issue_date = attrgetter('invoice_date')
     invoice_kind = attrgetter('sii_operation_key')
     rectified_invoice_kind = callback_utils.fixed_value('I')
-    not_exempt_kind = attrgetter('sii_subjected')
+    not_exempt_kind = attrgetter('sii_subjected_key')
     counterpart_name = attrgetter('party.name')
     counterpart_nif = attrgetter('party.sii_vat_code')
     counterpart_id_type = attrgetter('party.identifier_type')
