@@ -24,6 +24,7 @@
   <field name="special_key"/>
   <label name="total_amount"/>
   <field name="total_amount"/>
+  <field name="taxes" colspan="4"/>
   <label name="counterpart_name"/>
   <field name="counterpart_name"/>
   <label name="counterpart_id"/>

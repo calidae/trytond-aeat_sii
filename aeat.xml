@@ -104,6 +104,13 @@
           <field name="perm_delete" eval="True"/>
       </record>
 
+      <record model="ir.ui.view" id="aeat_sii_report_line_tax_tree_view">
+          <field name="model">aeat.sii.report.line.tax</field>
+          <field name="type">tree</field>
+          <field name="name">sii_report_line_tax_list</field>
+      </record>
+
+
       <record model="ir.rule.group" id="rule_group_sii_report">
           <field name="model" search="[('model', '=', 'aeat.sii.report')]"/>
           <field name="global_p" eval="True"/>
