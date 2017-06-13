@@ -104,14 +104,15 @@ class Invoice:
         table = SIILines.__table__()
         cursor = Transaction().cursor
         cursor.execute(*table.select(Max(table.id), table.invoice,
-            where=table.invoice.in_([x.id for x in invoices]),
+            where=(table.invoice.in_([x.id for x in invoices]) &
+                (table.state != None)),
             group_by=table.invoice))
 
         lines = [a[0] for a in cursor.fetchall()]
 
         if lines:
             cursor.execute(*table.select(table.state, table.invoice,
-                where=table.id.in_(lines)))
+                where=(table.id.in_(lines)) & (table.state != None)))
 
             for state, inv in cursor.fetchall():
                 result['sii_state'][inv] = state
