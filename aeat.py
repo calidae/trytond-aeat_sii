@@ -667,7 +667,7 @@ class BaseTrytonInvoiceMapper(Model):
     issue_date = attrgetter('invoice_date')
     invoice_kind = attrgetter('sii_operation_key')
     rectified_invoice_kind = callback_utils.fixed_value('I')
-    not_exempt_kind = attrgetter('sii_subjected')
+    not_exempt_kind = attrgetter('sii_subjected_key')
     counterpart_name = attrgetter('party.name')
     counterpart_nif = attrgetter('party.vat_number')
     counterpart_id_type = attrgetter('party.identifier_type')
@@ -707,29 +707,29 @@ class BaseTrytonInvoiceMapper(Model):
 
     def _tax_equivalence_surcharge(self, invoice_tax):
         parent_tax = invoice_tax.tax.parent
-        surcharge_taxes = [
-            sibling
-            for sibling in invoice_tax.invoice.taxes
-            if (
-                sibling.tax.recargo_equivalencia and
-                sibling.tax.parent.id == parent_tax.id
-            )
-        ]
-        if surcharge_taxes:
-            (invoice_tax,) = surcharge_taxes
-            return invoice_tax
-        else:
-            return None
+        if parent_tax:
+            surcharge_taxes = [
+                sibling
+                for sibling in invoice_tax.invoice.taxes
+                if (
+                    sibling.tax.recargo_equivalencia and
+                    sibling.tax.parent.id == parent_tax.id
+                )
+            ]
+            if surcharge_taxes:
+                (surcharge_tax,) = surcharge_taxes
+                return surcharge_tax
+        return None
 
     def tax_equivalence_surcharge_rate(self, invoice_tax):
-        invoice_tax = self._tax_equivalence_surcharge(invoice_tax)
-        if invoice_tax:
-            return self.tax_rate(invoice_tax)
+        surcharge_tax = self._tax_equivalence_surcharge(invoice_tax)
+        if surcharge_tax:
+            return self.tax_rate(surcharge_tax)
 
     def tax_equivalence_surcharge_amount(self, invoice_tax):
-        invoice_tax = self._tax_equivalence_surcharge(invoice_tax)
-        if invoice_tax:
-            return self.tax_amount(invoice_tax)
+        surcharge_tax = self._tax_equivalence_surcharge(invoice_tax)
+        if surcharge_tax:
+            return self.tax_amount(surcharge_tax)
 
 
 class IssuedTrytonInvoiceMapper(
@@ -754,6 +754,8 @@ class RecievedTrytonInvoiceMapper(
     specialkey_or_trascendence = attrgetter('sii_received_key')
     move_date = attrgetter('move.date')
     deductible_amount = attrgetter('tax_amount')  # most of the times
+    tax_reagyp_rate = BaseTrytonInvoiceMapper.tax_rate
+    tax_reagyp_amount = BaseTrytonInvoiceMapper.tax_amount
 
 
 class SIIReportLine(ModelSQL, ModelView):
