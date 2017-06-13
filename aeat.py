@@ -278,7 +278,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                 }, depends=['state'])
     lines = fields.One2Many('aeat.sii.report.lines', 'report',
         'Lines', states={
-            'readonly': ~Eval('state').in_(['draft']),
+            'readonly':  Eval('state') != 'draft',
             }, depends=['state'])
 
     @classmethod
