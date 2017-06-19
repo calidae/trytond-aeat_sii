@@ -349,7 +349,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         return Transaction().context.get('company')
 
     @fields.depends('company')
-    def on_change_with_currency(self, name):
+    def on_change_with_currency(self, name=None):
         if self.company:
             return self.company.currency.id
 
