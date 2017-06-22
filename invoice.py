@@ -138,13 +138,14 @@ class Invoice:
 
     @fields.depends(*_SII_INVOICE_KEYS)
     def _on_change_lines_taxes(self):
-        super(Invoice, self)._on_change_lines_taxes()
+        res = super(Invoice, self)._on_change_lines_taxes()
         for field in _SII_INVOICE_KEYS:
             if getattr(self, field):
-                return
+                return res
 
         tax = self.taxes and self.taxes[0]
         if not tax:
-            return
+            return res
         for field in _SII_INVOICE_KEYS:
-            setattr(self, field, getattr(tax.tax, field))
+            res[field] = getattr(tax.tax, field)
+        return res
