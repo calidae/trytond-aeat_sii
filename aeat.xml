@@ -1,9 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0"?>
 <!-- The COPYRIGHT file at the top level of this repository contains the full
      copyright notices and license terms. -->
 <tryton>
     <data>
-
       <record model="res.group" id="group_aeat_sii_admin">
           <field name="name">AEAT SII Administration</field>
       </record>
@@ -192,6 +191,7 @@
           <field name="domain">[('book', '=', 'R')]</field>
           <field name="search_value"></field>
       </record>
+
       <menuitem action="act_aeat_sii_received_report"
           id="menu_aeat_sii_report_received"
           parent="menu_aeat_sii_report_menu" sequence="10"
@@ -216,6 +216,5 @@
           id="menu_aeat_sii_report"
           parent="menu_aeat_sii_report_menu" sequence="10"
           name="AEAT SII Report Lines"/>
-
 </data>
 </tryton>

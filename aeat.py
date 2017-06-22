@@ -1,13 +1,6 @@
 # -*- coding: utf-8 -*-
 # The COPYRIGHT file at the top level of this repository contains the full
 # copyright notices and license terms.
-
-__all__ = [
-    'SIIReport',
-    'SIIReportLine',
-    'SIIReportLineTax',
-]
-
 import unicodedata
 from logging import getLogger
 from decimal import Decimal
@@ -21,6 +14,11 @@ from trytond.pyson import Eval
 from trytond.pool import Pool
 from trytond.transaction import Transaction
 
+__all__ = [
+    'SIIReport',
+    'SIIReportLine',
+    'SIIReportLineTax',
+	]
 
 _logger = getLogger(__name__)
 _ZERO = Decimal('0.0')
@@ -41,7 +39,7 @@ def _datetime(x):
 COMMUNICATION_TYPE = [   # L0
     ('A0', 'New Invoices'),
     ('A1', 'Modify Invoices'),
-    # ('A4', 'Modify (Travelers)'),  # Not suported
+    # ('A4', 'Modify (Travelers)'), # Not suported
     ('C0', 'Query Invoices'),  # Not in L0
     ('D0', 'Delete Invoices'),  # Not In L0
 ]
@@ -262,24 +260,20 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             'required': Eval('state').in_(['confirmed', 'done']),
             'readonly': ~Eval('state').in_(['draft', 'confirmed']),
             }, depends=['state'])
-
     period = fields.Many2One('account.period', 'Period', required=True,
         domain=[('fiscalyear', '=', Eval('fiscalyear'))],
         states={
             'readonly': Eval('state') != 'draft',
             }, depends=['state', 'fiscalyear'])
-
     operation_type = fields.Selection(COMMUNICATION_TYPE, 'Operation Type',
         required=True,
         states={
             'readonly': ~Eval('state').in_(['draft', 'confirmed']),
             }, depends=['state'])
-
     book = fields.Selection(BOOK_KEY, 'Book', required=True,
         states={
             'readonly': ~Eval('state').in_(['draft', 'confirmed']),
             }, depends=['state'])
-
     state = fields.Selection([
             ('draft', 'Draft'),
             ('confirmed', 'Confirmed'),
@@ -290,21 +284,18 @@ class SIIReport(Workflow, ModelSQL, ModelView):
 
     communication_state = fields.Selection(AEAT_COMMUNICATION_STATE,
         'Communication State', readonly=True)
-
-    csv = fields.Char(
-        'CSV', readonly=True
-    )
-
+    csv = fields.Char('CSV', readonly=True)
     version = fields.Selection([
             ('0.7', '0.7'),
             ], 'Version', required=True, states={
                 }, depends=['state'])
-
     lines = fields.One2Many('aeat.sii.report.lines', 'report',
         'Lines', states={
             'readonly':  Eval('state') != 'draft',
             }, depends=['state'])
-
+    send_date = fields.DateTime('Send date', readonly=True,
+        states={'invisible': Eval('state') != 'sent'},
+        depends=['state'])
 
     @classmethod
     def __setup__(cls):
@@ -332,7 +323,6 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                          Eval('operation_type').in_(['A0', 'A1'])),
                     }
                 })
-
         cls._transitions |= set((
                 ('draft', 'confirmed'),
                 ('draft', 'cancelled'),
@@ -342,10 +332,8 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                 ('cancelled', 'draft'),
                 ))
 
-
     @staticmethod
     def default_company():
-
         return Transaction().context.get('company')
 
     @fields.depends('company')
@@ -379,6 +367,8 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         else:
             default = default.copy()
         default['communication_state'] = None
+        default['csv'] = None
+        default['send_date'] = None
         return super(SIIReport, cls).copy(records, default=default)
 
     @classmethod
@@ -418,6 +408,9 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                     raise NotImplementedError
             else:
                 raise NotImplementedError
+
+        cls.write(reports, {
+            'send_date': datetime.now()})
         _logger.debug('Done sending reports to AEAT SII')
 
     @classmethod
@@ -458,7 +451,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         _logger.info('Sending report %s to AEAT SII', self.id)
         headers = mapping.get_headers(
             name=self.company.party.name,
-            vat=self.company.party.vat_number,
+            vat=self.company_vat,
             comm_kind=self.operation_type)
         pool = Pool()
         mapper = pool.get('aeat.sii.issued.invoice.mapper')(pool=pool)
@@ -485,7 +478,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
     def delete_issued_invoices(self):
         headers = mapping.get_headers(
             name=self.company.party.name,
-            vat=self.company.party.vat_number,
+            vat=self.company_vat,
             comm_kind=self.operation_type)
         pool = Pool()
         mapper = pool.get('aeat.sii.issued.invoice.mapper')(pool=pool)
@@ -515,7 +508,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         Invoice = pool.get('account.invoice')
         headers = mapping.get_headers(
             name=self.company.party.name,
-            vat=self.company.party.vat_number,
+            vat=self.company_vat,
             comm_kind=self.operation_type)
 
         with self.company.tmp_ssl_credentials() as (crt, key):
@@ -588,7 +581,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         _logger.info('Sending report %s to AEAT SII', self.id)
         headers = mapping.get_headers(
             name=self.company.party.name,
-            vat=self.company.party.vat_number,
+            vat=self.company_vat,
             comm_kind=self.operation_type)
         pool = Pool()
         mapper = pool.get('aeat.sii.recieved.invoice.mapper')(pool=pool)
@@ -615,7 +608,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
     def delete_recieved_invoices(self):
         headers = mapping.get_headers(
             name=self.company.party.name,
-            vat=self.company.party.vat_number,
+            vat=self.company_vat,
             comm_kind=self.operation_type)
         pool = Pool()
         mapper = pool.get('aeat.sii.recieved.invoice.mapper')(pool=pool)
@@ -647,7 +640,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         SIIReportLineTax = pool.get('aeat.sii.report.line.tax')
         headers = mapping.get_headers(
             name=self.company.party.name,
-            vat=self.company.party.vat_number,
+            vat=self.company_vat,
             comm_kind=self.operation_type)
 
         with self.company.tmp_ssl_credentials() as (crt, key):

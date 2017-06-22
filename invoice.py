@@ -1,6 +1,5 @@
 # The COPYRIGHT file at the top level of this repository contains the full
 # copyright notices and license terms.
-
 from trytond.model import fields
 from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Eval
@@ -11,7 +10,7 @@ from sql.aggregate import Max
 from .aeat import (
     OPERATION_KEY, BOOK_KEY, SEND_SPECIAL_REGIME_KEY,
     RECEIVE_SPECIAL_REGIME_KEY, AEAT_INVOICE_STATE, IVA_SUBJECTED,
-    EXCEMPTION_CAUSE, INTRACOMUNITARY_TYPE)
+    EXCEMPTION_CAUSE, INTRACOMUNITARY_TYPE, COMMUNICATION_TYPE)
 
 
 __all__ = ['Invoice']
@@ -46,6 +45,9 @@ class Invoice:
         "Sii Report Lines")
     sii_state = fields.Function(fields.Selection(AEAT_INVOICE_STATE,
             'SII State'), 'get_sii_state', searcher='search_sii_state')
+    sii_communication_type = fields.Function(fields.Selection(
+        COMMUNICATION_TYPE, 'SII Communication Yype'),
+        'get_sii_state')
 
     @classmethod
     def __setup__(cls):
@@ -53,6 +55,13 @@ class Invoice:
         cls._check_modify_exclude += ['sii_book_key', 'sii_operation_key',
             'sii_received_key', 'sii_issued_key', 'sii_subjected_key',
             'sii_excemption_key', 'sii_intracomunity_key']
+
+    @staticmethod
+    def default_sii_operation_key():
+        type_ = Transaction().context.get('type', 'out_invoice')
+        if type_ in ('in_credit_note', 'out_credit_note'):
+            return 'R1'
+        return 'F1'
 
     @classmethod
     def search_sii_state(cls, name, clause):
@@ -84,12 +93,17 @@ class Invoice:
     def get_sii_state(cls, invoices, names):
         pool = Pool()
         SIILines = pool.get('aeat.sii.report.lines')
+        SIIReport = pool.get('aeat.sii.report')
+
         result = {}
         for name in names:
             result[name] = dict((i.id, None) for i in invoices)
 
         table = SIILines.__table__()
+        report = SIIReport.__table__()
         cursor = Transaction().cursor
+        join = table.join(report, condition=table.report == report.id)
+
         cursor.execute(*table.select(Max(table.id), table.invoice,
             where=(table.invoice.in_([x.id for x in invoices]) &
                 (table.state != None)),
@@ -98,11 +112,16 @@ class Invoice:
         lines = [a[0] for a in cursor.fetchall()]
 
         if lines:
-            cursor.execute(*table.select(table.state, table.invoice,
+            cursor.execute(*join.select(table.state, report.operation_type,
+                table.invoice,
                 where=(table.id.in_(lines)) & (table.state != None)))
 
-            for state, inv in cursor.fetchall():
-                result['sii_state'][inv] = state
+            for state, op, inv in cursor.fetchall():
+                if 'sii_state' in names:
+                    result['sii_state'][inv] = state
+                if 'sii_communication_type' in names:
+                    result['sii_communication_type'][inv] = op
+
         return result
 
     def _credit(self):

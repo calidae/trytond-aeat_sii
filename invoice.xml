@@ -1,21 +1,18 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0"?>
 <!-- The COPYRIGHT file at the top level of this repository contains the full
      copyright notices and license terms. -->
 <tryton>
     <data>
       <record model="ir.ui.view" id="aeat_sii_invoice_form_view">
           <field name="model">account.invoice</field>
-          <field name="type">form</field>
           <field name="inherit" ref="account_invoice.invoice_view_form"/>
           <field name="name">account_invoice_form</field>
       </record>
 
       <record model="ir.ui.view" id="aeat_sii_invoice_list_view">
           <field name="model">account.invoice</field>
-          <field name="type">tree</field>
           <field name="inherit" ref="account_invoice.invoice_view_tree"/>
           <field name="name">account_invoice_list</field>
       </record>
     </data>
-
 </tryton>
