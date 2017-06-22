@@ -11,6 +11,5 @@ class Party:
     __name__ = 'party.party'
     __metaclass__ = PoolMeta
 
-    # TODO: v4 change to party.identifier module
-    identifier_type = fields.Selection(aeat.PARTY_IDENTIFIER_TYPE,
-        'Identifier Type')
+    sii_identifier_type = fields.Selection(aeat.PARTY_IDENTIFIER_TYPE,
+        'SII Identifier Type')

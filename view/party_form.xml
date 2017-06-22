@@ -4,7 +4,7 @@ copyright notices and license types. -->
 <data>
     <xpath expr="/form/notebook/page[@id='accounting']/field[@name='vat_number']"
         position="after">
-        <label name="identifier_type"/>
-        <field name="identifier_type"/>
+        <label name="sii_identifier_type"/>
+        <field name="sii_identifier_type"/>
     </xpath>
 </data>

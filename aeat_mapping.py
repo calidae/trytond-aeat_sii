@@ -33,7 +33,7 @@ class BaseTrytonInvoiceMapper(Model):
     not_exempt_kind = attrgetter('sii_subjected_key')
     counterpart_name = attrgetter('party.name')
     counterpart_nif = attrgetter('party.vat_number')
-    counterpart_id_type = attrgetter('party.identifier_type')
+    counterpart_id_type = attrgetter('party.sii_identifier_type')
     counterpart_country = attrgetter('party.vat_country')
     counterpart_id = counterpart_nif
     tax_rate = attrgetter('tax.rate')
