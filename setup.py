@@ -7,8 +7,10 @@ import os
 import ConfigParser
 
 MODULE = 'aeat_sii'
-PREFIX = 'nantic'
-MODULE2PREFIX = {}
+PREFIX = 'trytonspain'
+MODULE2PREFIX = {
+    'account_es': 'trytonspain'
+    }
 
 
 def read(fname):
@@ -39,8 +41,7 @@ minor_version = int(minor_version)
 requires = [
     'cryptography',
     'pyOpenSSL',
-    'pyAEATsii>=0.2',
-    'vatnumber'
+    'pyAEATsii>=0.2.4'
 ]
 for dep in info.get('depends', []):
     if not re.match(r'(ir|res|webdav)(\W|$)', dep):
@@ -56,10 +57,10 @@ setup(name='%s_%s' % (PREFIX, MODULE),
     version=version,
     description='',
     long_description=read('README'),
-    author='NaN·tic',
-    author_email='info@nan-tic.com',
-    url='http://www.nan-tic.com/',
-    download_url="https://bitbucket.org/nantic/trytond-%s" % MODULE,
+    author='TrytonSpain',
+    author_email='',
+    url='https://bitbucket.org/trytonspain/',
+    download_url="https://bitbucket.org/trytonspain/trytond-%s" % MODULE,
     package_dir={'trytond.modules.%s' % MODULE: '.'},
     packages=[
         'trytond.modules.%s' % MODULE,
@@ -67,7 +68,7 @@ setup(name='%s_%s' % (PREFIX, MODULE),
         ],
     package_data={
         'trytond.modules.%s' % MODULE: (info.get('xml', [])
-            + ['tryton.cfg', 'locale/*.po', 'tests/*.rst']),
+            + ['tryton.cfg', 'locale/*.po', 'tests/*.rst', 'view/*.xml']),
         },
     classifiers=[
         'Development Status :: 5 - Production/Stable',
