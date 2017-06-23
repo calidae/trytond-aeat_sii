@@ -73,7 +73,7 @@ class Invoice:
 
         table = SIILines.__table__()
 
-        cursor = Transaction().cursor()
+        cursor = Transaction().cursor
         cursor.execute(*table.select(Max(table.id), table.invoice,
             group_by=table.invoice))
 
@@ -104,7 +104,7 @@ class Invoice:
 
         table = SIILines.__table__()
         report = SIIReport.__table__()
-        cursor = Transaction().cursor()
+        cursor = Transaction().cursor
         join = table.join(report, condition=table.report == report.id)
 
         cursor.execute(*table.select(Max(table.id), table.invoice,
