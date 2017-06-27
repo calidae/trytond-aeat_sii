@@ -13,11 +13,32 @@ from .aeat import (
     EXCEMPTION_CAUSE, INTRACOMUNITARY_TYPE, COMMUNICATION_TYPE)
 
 
-__all__ = ['Invoice']
+__all__ = ['Invoice', 'Sale']
+
 
 _SII_INVOICE_KEYS = ['sii_book_key', 'sii_issued_key', 'sii_received_key',
         'sii_subjected_key', 'sii_excemption_key',
         'sii_intracomunity_key']
+
+
+class Sale:
+    __metaclass__ = PoolMeta
+    __name__ = 'sale.sale'
+
+    def create_invoice(self, invoice_type):
+        invoice = super(Sale, self).create_invoice(invoice_type)
+
+        if not invoice:
+            return invoice
+
+        tax = invoice.taxes and invoice.taxes[0]
+        if not tax:
+            return invoice
+        for field in _SII_INVOICE_KEYS:
+            setattr(invoice, field, getattr(tax.tax, field))
+
+        invoice.save()
+        return invoice
 
 
 class Invoice:
@@ -131,9 +152,23 @@ class Invoice:
         res = super(Invoice, self)._credit()
         for field in _SII_INVOICE_KEYS:
             res[field] = getattr(self, field)
-
         res['sii_operation_key'] = 'R4'
         return res
+
+    @fields.depends(*_SII_INVOICE_KEYS)
+    def on_change_lines(self):
+        res = super(Invoice, self).on_change_lines()
+        for field in _SII_INVOICE_KEYS:
+            if getattr(self, field):
+                return res
+
+        tax = self.taxes and self.taxes[0]
+        if not tax:
+            return res
+        for field in _SII_INVOICE_KEYS:
+            res[field] = getattr(tax.tax, field)
+        return res
+
 
     @fields.depends(*_SII_INVOICE_KEYS)
     def _on_change_lines_taxes(self):
