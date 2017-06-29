@@ -154,13 +154,19 @@ class Invoice:
             if getattr(self, field):
                 return res
 
-        tax = self.taxes and self.taxes[0]
+        Tax = Pool().get('account.tax')
+        taxes = res.get('taxes') and res['taxes'].get('add')
+        if not taxes:
+            return res
+
+        tax = Tax(taxes[0][1]['tax'])
+
         if not tax:
             return res
         for field in _SII_INVOICE_KEYS:
-            res[field] = getattr(tax.tax, field)
-        return res
+            res[field] = getattr(tax, field)
 
+        return res
 
     @fields.depends(*_SII_INVOICE_KEYS)
     def _on_change_lines_taxes(self):
