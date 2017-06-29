@@ -74,8 +74,6 @@ class Invoice:
 
         table = SIILines.__table__()
 
-        print "clause:", clause
-
         cursor = Transaction().cursor
         cursor.execute(*table.select(Max(table.id), table.invoice,
             group_by=table.invoice))
