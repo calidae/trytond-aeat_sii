@@ -719,7 +719,7 @@ class SIIReportLine(ModelSQL, ModelView):
 
     report = fields.Many2One(
         'aeat.sii.report', 'Issued Report', ondelete='CASCADE')
-    invoice = fields.Many2One('account.invoice', 'Invoice')
+    invoice = fields.Many2One('account.invoice', 'Invoice', required=True)
     state = fields.Selection(AEAT_INVOICE_STATE, 'State')
     communication_code = fields.Integer(
         'Communication Code', readonly=True)
