@@ -337,6 +337,10 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                          Eval('operation_type').in_(['A0', 'A1'])),
                     }
                 })
+        cls._error_messages.update({
+                'delete_cancel': ('Report "%s" must be cancelled before '
+                    'deletion.'),
+                })
         cls._transitions |= set((
                 ('draft', 'confirmed'),
                 ('draft', 'cancelled'),
@@ -386,6 +390,14 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         return super(SIIReport, cls).copy(records, default=default)
 
     @classmethod
+    def delete(cls, reports):
+        # Cancel before delete
+        for report in reports:
+            if report.state != 'cancelled':
+                cls.raise_user_error('delete_cancel', (report.rec_name,))
+        super(SIIReport, cls).delete(reports)
+
+    @classmethod
     @ModelView.button
     @Workflow.transition('draft')
     def draft(cls, reports):
@@ -395,6 +407,12 @@ class SIIReport(Workflow, ModelSQL, ModelView):
     @ModelView.button
     @Workflow.transition('confirmed')
     def confirm(cls, reports):
+        pass
+
+    @classmethod
+    @ModelView.button
+    @Workflow.transition('cancelled')
+    def cancel(cls, reports):
         pass
 
     @classmethod
@@ -426,12 +444,6 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         cls.write(reports, {
             'send_date': datetime.now()})
         _logger.debug('Done sending reports to AEAT SII')
-
-    @classmethod
-    @ModelView.button
-    @Workflow.transition('cancelled')
-    def cancel(cls, reports):
-        pass
 
     @classmethod
     @ModelView.button
