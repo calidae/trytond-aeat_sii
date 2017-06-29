@@ -474,9 +474,12 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         with self.company.tmp_ssl_credentials() as (crt, key):
             srv = service.bind_issued_invoices_service(
                 crt, key, test=SII_TEST)
-            res = srv.submit(
-                headers, (line.invoice for line in self.lines),
-                mapper=mapper)
+            try:
+                res = srv.submit(
+                    headers, (line.invoice for line in self.lines),
+                    mapper=mapper)
+            except Exception as e:
+                self.raise_user_error(str(e))
 
         self._save_response(res)
 
@@ -493,9 +496,12 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         with self.company.tmp_ssl_credentials() as (crt, key):
             srv = service.bind_issued_invoices_service(
                 crt, key, test=SII_TEST)
-            res = srv.cancel(
-                headers, (line.invoice for line in self.lines),
-                mapper=mapper)
+            try:
+                res = srv.cancel(
+                    headers, (line.invoice for line in self.lines),
+                    mapper=mapper)
+            except Exception as e:
+                self.raise_user_error(str(e))
 
         self._save_response(res)
 
@@ -592,9 +598,12 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         with self.company.tmp_ssl_credentials() as (crt, key):
             srv = service.bind_recieved_invoices_service(
                 crt, key, test=SII_TEST)
-            res = srv.submit(
-                headers, (line.invoice for line in self.lines),
-                mapper=mapper)
+            try:
+                res = srv.submit(
+                    headers, (line.invoice for line in self.lines),
+                    mapper=mapper)
+            except Exception as e:
+                self.raise_user_error(str(e))
 
         self._save_response(res)
 
@@ -611,9 +620,12 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         with self.company.tmp_ssl_credentials() as (crt, key):
             srv = service.bind_recieved_invoices_service(
                 crt, key, test=SII_TEST)
-            res = srv.cancel(
-                headers, (line.invoice for line in self.lines),
-                mapper=mapper)
+            try:
+                res = srv.cancel(
+                    headers, (line.invoice for line in self.lines),
+                    mapper=mapper)
+            except Exception as e:
+                self.raise_user_error(str(e))
 
         self._save_response(res)
 
@@ -747,6 +759,12 @@ class SIIReportLine(ModelSQL, ModelView):
     identifier_type = fields.Function(
         fields.Selection(PARTY_IDENTIFIER_TYPE,
         'Identifier Type'), 'get_identifier_type')
+    invoice_operation_key = fields.Function(
+        fields.Selection(OPERATION_KEY, 'SII Operation Key'),
+        'get_invoice_operation_key')
+
+    def get_invoice_operation_key(self, name):
+        return self.invoice.sii_operation_key
 
     def get_vat_code(self, name):
         return self.invoice.party.vat_code
