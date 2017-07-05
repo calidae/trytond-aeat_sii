@@ -117,6 +117,7 @@ class Invoice:
         SIIReport = pool.get('aeat.sii.report')
 
         result = {}
+
         for name in names:
             result[name] = dict((i.id, None) for i in invoices)
 
@@ -134,8 +135,9 @@ class Invoice:
 
         if lines:
             cursor.execute(*join.select(table.state, report.operation_type,
-                table.invoice,
-                where=(table.id.in_(lines)) & (table.state != None)))
+                    table.invoice,
+                    where=((table.id.in_(lines)) & (table.state != None) &
+                        (table.company = report.company))))
 
             for state, op, inv in cursor.fetchall():
                 if 'sii_state' in names:
@@ -188,7 +190,8 @@ class Invoice:
         for field in _SII_INVOICE_KEYS:
             if getattr(self, field):
                 return res
-        for k, v in self._set_sii_keys():
+        sii_keys =  self._set_sii_keys()
+        for k, v in sii_keys.iteritems():
             res[k] = v
         return res
 
