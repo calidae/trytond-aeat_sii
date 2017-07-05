@@ -137,7 +137,7 @@ class Invoice:
             cursor.execute(*join.select(table.state, report.operation_type,
                     table.invoice,
                     where=((table.id.in_(lines)) & (table.state != None) &
-                        (table.company = report.company))))
+                        (table.company == report.company))))
 
             for state, op, inv in cursor.fetchall():
                 if 'sii_state' in names:
