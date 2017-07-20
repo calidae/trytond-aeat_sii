@@ -9,6 +9,7 @@ from pyAEATsii import callback_utils
 
 from trytond.model import Model
 from trytond.pool import Pool
+from . import tools
 
 __all__ = [
     'IssuedTrytonInvoiceMapper',
@@ -32,7 +33,6 @@ class BaseTrytonInvoiceMapper(Model):
     rectified_invoice_kind = callback_utils.fixed_value('I')
     not_exempt_kind = attrgetter('sii_subjected_key')
     exempt_kind = attrgetter('sii_excemption_key')
-    counterpart_name = attrgetter('party.name')
     counterpart_nif = attrgetter('party.vat_number')
     counterpart_id_type = attrgetter('party.sii_identifier_type')
     counterpart_country = attrgetter('party.vat_country')
@@ -43,12 +43,15 @@ class BaseTrytonInvoiceMapper(Model):
     tax_base = attrgetter('base')
     tax_amount = attrgetter('amount')
 
+    def counterpart_name(self, invoice):
+        return tools.unaccent(invoice.party.name)
+
     def description(self, invoice):
-        return (
-            invoice.description or
-            invoice.lines[0].description or
-            self.serial_number(invoice)
-        )
+        if invoice.description:
+            return tools.unaccent(invoice.description)
+        if invoice.lines and invoice.lines[0].description:
+            return tools.unaccent(invoice.lines[0].description)
+        return self.serial_number(invoice)
 
     def final_serial_number(self, invoice):
         try:
@@ -98,9 +101,8 @@ class BaseTrytonInvoiceMapper(Model):
             return self.tax_amount(surcharge_tax)
 
 
-class IssuedTrytonInvoiceMapper(
-    mapping.IssuedInvoiceMapper, BaseTrytonInvoiceMapper
-):
+class IssuedTrytonInvoiceMapper(mapping.IssuedInvoiceMapper,
+        BaseTrytonInvoiceMapper):
     """
     Tryton Issued Invoice to AEAT mapper
     """
@@ -109,9 +111,8 @@ class IssuedTrytonInvoiceMapper(
     specialkey_or_trascendence = attrgetter('sii_issued_key')
 
 
-class RecievedTrytonInvoiceMapper(
-    mapping.RecievedInvoiceMapper, BaseTrytonInvoiceMapper
-):
+class RecievedTrytonInvoiceMapper(mapping.RecievedInvoiceMapper,
+        BaseTrytonInvoiceMapper):
     """
     Tryton Recieved Invoice to AEAT mapper
     """
