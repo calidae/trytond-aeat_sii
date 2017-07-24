@@ -35,7 +35,6 @@ class BaseTrytonInvoiceMapper(Model):
     exempt_kind = attrgetter('sii_excemption_key')
     counterpart_nif = attrgetter('party.vat_number')
     counterpart_id_type = attrgetter('party.sii_identifier_type')
-    counterpart_country = attrgetter('party.vat_country')
     counterpart_id = counterpart_nif
     untaxed_amount = attrgetter('untaxed_amount')
     total_amount = attrgetter('total_amount')
@@ -52,6 +51,12 @@ class BaseTrytonInvoiceMapper(Model):
         if invoice.lines and invoice.lines[0].description:
             return tools.unaccent(invoice.lines[0].description)
         return self.serial_number(invoice)
+
+    def counterpart_country(self, invoice):
+        if invoice.party.vat_country:
+            return invoice.party.vat_country
+        return (invoice.invoice_address.country.code
+            if invoice.invoice_address.country else '')
 
     def final_serial_number(self, invoice):
         try:
