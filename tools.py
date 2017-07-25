@@ -3,9 +3,9 @@
 # copyright notices and license terms.
 import unicodedata
 
-src_chars = """'"()/*-+?Â¿!&$[]{}@#`'^:;<>=~%,\\"""
+src_chars = """"/*+?Â¿!$[]{}@#`^:;<>=~%\\"""
 src_chars = unicode(src_chars, 'iso-8859-1')
-dst_chars = """_______________________________"""
+dst_chars = """________________________"""
 dst_chars = unicode(dst_chars, 'iso-8859-1')
 
 def normalize(text):
