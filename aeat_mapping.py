@@ -19,20 +19,6 @@ __all__ = [
 _logger = getLogger(__name__)
 
 
-def _amount_getter(field_name):
-    # In tryton 3.4 credit note amounts are positive
-    # They must be negative before being informed to SII
-    # This code should not be merged into higher tryton series
-
-    def is_credit_note(invoice):
-        return (invoice.type in {'in_credit_note', 'out_credit_note'})
-
-    def amount_getter(self, invoice):
-        val = attrgetter(field_name)(invoice)
-        return val if val is None or not is_credit_note(invoice) else -val
-    return amount_getter
-
-
 class BaseTrytonInvoiceMapper(Model):
 
     def __init__(self, *args, **kwargs):
