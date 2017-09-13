@@ -36,11 +36,11 @@ class BaseTrytonInvoiceMapper(Model):
     counterpart_nif = attrgetter('party.vat_number')
     counterpart_id_type = attrgetter('party.sii_identifier_type')
     counterpart_id = counterpart_nif
-    untaxed_amount = _amount_getter('untaxed_amount')
-    total_amount = _amount_getter('total_amount')
+    untaxed_amount = attrgetter('untaxed_amount')
+    total_amount = attrgetter('total_amount')
     tax_rate = attrgetter('tax.rate')
-    tax_base = _amount_getter('base')
-    tax_amount = _amount_getter('amount')
+    tax_base = attrgetter('base')
+    tax_amount = attrgetter('amount')
 
     def counterpart_name(self, invoice):
         return tools.unaccent(invoice.party.name)
@@ -125,6 +125,6 @@ class RecievedTrytonInvoiceMapper(mapping.RecievedInvoiceMapper,
     serial_number = attrgetter('reference')
     specialkey_or_trascendence = attrgetter('sii_received_key')
     move_date = attrgetter('move.date')
-    deductible_amount = _amount_getter('tax_amount')  # most of the times
+    deductible_amount = attrgetter('tax_amount')  # most of the times
     tax_reagyp_rate = BaseTrytonInvoiceMapper.tax_rate
     tax_reagyp_amount = BaseTrytonInvoiceMapper.tax_amount
