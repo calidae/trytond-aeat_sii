@@ -27,8 +27,14 @@ def _amount_getter(field_name):
     def is_credit_note(invoice):
         return (invoice.type in {'in_credit_note', 'out_credit_note'})
 
-    def amount_getter(self, invoice):
-        val = attrgetter(field_name)(invoice)
+    def amount_getter(self, field):
+        pool = Pool()
+        InvoiceTax = pool.get('account.invoice.tax')
+        if isinstance(field, InvoiceTax):
+            invoice = field.invoice
+        else:
+            invoice = field
+        val = attrgetter(field_name)(field)
         return val if val is None or not is_credit_note(invoice) else -val
     return amount_getter
 
