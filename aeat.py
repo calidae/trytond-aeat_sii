@@ -324,7 +324,11 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                 'load_invoices': {
                     'invisible': ~(Eval('state').in_(['draft']) &
                          Eval('operation_type').in_(['A0', 'A1'])),
-                    }
+                    },
+                'search_invoices': {
+                    'invisible': ~(Eval('state').in_(['draft']) &
+                        Eval('operation_type').in_(['A0', 'A1', 'D0'])),
+                    },
                 })
         cls._error_messages.update({
                 'delete_cancel': ('Report "%s" must be cancelled before '
@@ -466,6 +470,11 @@ class SIIReport(Workflow, ModelSQL, ModelView):
 
         if to_create:
             ReportLine.create(to_create)
+
+    @classmethod
+    @ModelView.button_action('aeat_sii.search_invoices_act_wizard')
+    def search_invoices(cls, reports):
+        pass
 
     def submit_issued_invoices(self):
         pool = Pool()

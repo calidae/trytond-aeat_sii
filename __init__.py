@@ -8,6 +8,7 @@ from . import company
 from . import load_pkcs12
 from . import account
 from . import aeat_mapping
+from . import search_invoices
 
 
 def register():
@@ -25,7 +26,9 @@ def register():
         aeat.SIIReportLineTax,
         aeat_mapping.IssuedTrytonInvoiceMapper,
         aeat_mapping.RecievedTrytonInvoiceMapper,
+        search_invoices.StartView,
         module='aeat_sii', type_='model')
     Pool.register(
         load_pkcs12.LoadPKCS12,
+        search_invoices.SearchInvoicesWizard,
         module='aeat_sii', type_='wizard')
