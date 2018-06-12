@@ -4,7 +4,6 @@
 from decimal import Decimal
 from logging import getLogger
 from operator import attrgetter
-from decimal import Decimal
 
 from pyAEATsii import mapping
 from pyAEATsii import callback_utils
@@ -16,19 +15,13 @@ from . import tools
 __all__ = [
     'IssuedTrytonInvoiceMapper',
     'RecievedTrytonInvoiceMapper',
-	]
+    ]
 
 _logger = getLogger(__name__)
 
 
+# Only for 3.4 and 3.8 version
 def _amount_getter(field_name):
-    # In tryton 3.4 credit note amounts are positive
-    # They must be negative before being informed to SII
-    # This code should not be merged into higher tryton series
-
-    def is_credit_note(invoice):
-        return (invoice.type in {'in_credit_note', 'out_credit_note'})
-
     def amount_getter(self, field):
         pool = Pool()
         InvoiceTax = pool.get('account.invoice.tax')
@@ -37,7 +30,8 @@ def _amount_getter(field_name):
         else:
             invoice = field
         val = attrgetter(field_name)(field)
-        return val if val is None or not is_credit_note(invoice) else -val
+        credit_note = invoice.type in ('in_credit_note', 'out_credit_note')
+        return val if val is None or not credit_note else -val
     return amount_getter
 
 
@@ -56,13 +50,30 @@ class BaseTrytonInvoiceMapper(Model):
     not_exempt_kind = attrgetter('sii_subjected_key')
     exempt_kind = attrgetter('sii_excemption_key')
     counterpart_nif = attrgetter('party.vat_number')
+
+    def get_untaxed_amount(self, invoice):
+        taxes = self.taxes(invoice)
+        untaxed = 0
+        for tax in taxes:
+            untaxed += _amount_getter('company_base')
+        return untaxed
+
+    def get_total_amount(self, invoice):
+        taxes = self.taxes(invoice)
+        total = 0
+        for tax in taxes:
+            tax_base = _amount_getter('company_base')
+            tax_amount = _amount_getter('company_amount')
+            total += tax_base + tax_amount)
+        return total
+
     counterpart_id_type = attrgetter('party.sii_identifier_type')
     counterpart_id = counterpart_nif
-    untaxed_amount = _amount_getter('untaxed_amount')
-    total_amount = _amount_getter('total_amount')
+    untaxed_amount = get_untaxed_amount
+    total_amount = get_total_amount
     tax_rate = attrgetter('tax.rate')
-    tax_base = _amount_getter('base')
-    tax_amount = _amount_getter('amount')
+    tax_base = _amount_getter('company_base')
+    tax_amount = _amount_getter('company_amount')
 
     def counterpart_name(self, invoice):
         return tools.unaccent(invoice.party.name)
