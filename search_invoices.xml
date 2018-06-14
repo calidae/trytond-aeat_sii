@@ -4,15 +4,15 @@
 <tryton>
     <data>
 
-        <record model="ir.ui.view" id="search_invoices_start_view_form">
-            <field name="model">aeat.sii.search_invoices.start</field>
+        <record model="ir.ui.view" id="add_invoices_start_view_form">
+            <field name="model">aeat.sii.add_invoices.start</field>
             <field name="type">form</field>
             <field name="name">search_invoices_start</field>
         </record>
 
-        <record model="ir.action.wizard" id="search_invoices_act_wizard">
-            <field name="name">Search Invoices</field>
-            <field name="wiz_name">aeat.sii.search_invoices.wizard</field>
+        <record model="ir.action.wizard" id="add_invoices_act_wizard">
+            <field name="name">Add Invoices</field>
+            <field name="wiz_name">aeat.sii.add_invoices.wizard</field>
         </record>
 
     </data>

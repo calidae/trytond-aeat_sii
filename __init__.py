@@ -30,5 +30,5 @@ def register():
         module='aeat_sii', type_='model')
     Pool.register(
         load_pkcs12.LoadPKCS12,
-        search_invoices.SearchInvoicesWizard,
+        search_invoices.AddInvoicesWizard,
         module='aeat_sii', type_='wizard')

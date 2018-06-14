@@ -13,18 +13,15 @@ from .aeat import BOOK_KEY, COMMUNICATION_TYPE
 
 __all__ = [
     'StartView',
-    'SearchInvoicesWizard',
+    'AddInvoicesWizard',
 ]
 
 _logger = getLogger(__name__)
 
 
-# TODO: fix account.invoice `sii_state` searcher performance
-# and uncomment all code blocks regarding `operation_type`
-
 class StartView(ModelView):
-    'Search Invoices Start View'
-    __name__ = 'aeat.sii.search_invoices.start'
+    'Add Invoices Start View'
+    __name__ = 'aeat.sii.add_invoices.start'
 
     company = fields.Many2One('company.company', 'Company')
     period = fields.Many2One('account.period', 'Period')
@@ -40,43 +37,34 @@ class StartView(ModelView):
                 If(
                     Equal(Eval('book'), 'R'),  # recieved
                     ('type', 'in', ['in_invoice', 'in_credit_note']),
-                    ('id', '!=', None)  # dummy clause
+                    ()
                 )
             ),
             ('state', 'in', ['posted', 'paid']),
             ('company', '=', Eval('company')),
             ('move.period', '=', Eval('period')),
-            # If(
-            #     Equal(Eval('operation_type'), 'A0'),  # create
-            #     ('sii_state', 'in', [None, 'Incorrecto']),
-            #     If(
-            #         In(Eval('operation_type'), ['A1', 'D0']),  # edit/delete
-            #         ('sii_state', 'in', [
-            #             'Correcto', 'Correcta',
-            #             'AceptadoConErrores', 'AceptadaConErrores']),
-            #         ('id', '!=', None)  # dummy clause
-            #     )
-            # ),
+            # TODO: fix account.invoice `sii_state` searcher performance and
+            # add a clause filtering by `sii_state` for each operation_type
         ],
         depends=[
-            'company', 'period', 'book',  # 'operation_type',
+            'company', 'period', 'book',
         ],
     )
 
 
-class SearchInvoicesWizard(Wizard):
-    'Search Invoices Wizard'
-    __name__ = 'aeat.sii.search_invoices.wizard'
+class AddInvoicesWizard(Wizard):
+    'Add Invoices Wizard'
+    __name__ = 'aeat.sii.add_invoices.wizard'
 
     start = StateView(
-        'aeat.sii.search_invoices.start',
-        'aeat_sii.search_invoices_start_view_form',
+        'aeat.sii.add_invoices.start',
+        'aeat_sii.add_invoices_start_view_form',
         [
             Button('Cancel', 'end', 'tryton-cancel'),
-            Button('Attach', 'attach', 'tryton-ok', default=True),
+            Button('Add', 'add', 'tryton-ok', default=True),
         ]
     )
-    attach = StateTransition()
+    add = StateTransition()
 
     def default_start(self, fields):
         SIIReport = Pool().get('aeat.sii.report')
@@ -90,7 +78,7 @@ class SearchInvoicesWizard(Wizard):
             'operation_type': sii_report.operation_type,
         }
 
-    def transition_attach(self):
+    def transition_add(self):
         SIIReportLine = Pool().get('aeat.sii.report.lines')
         report_id = Transaction().context['active_id']
         SIIReportLine.create([

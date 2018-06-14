@@ -325,7 +325,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                     'invisible': ~(Eval('state').in_(['draft']) &
                          Eval('operation_type').in_(['A0', 'A1'])),
                     },
-                'search_invoices': {
+                'add_invoices': {
                     'invisible': ~(Eval('state').in_(['draft']) &
                         Eval('operation_type').in_(['A0', 'A1', 'D0'])),
                     },
@@ -472,8 +472,8 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             ReportLine.create(to_create)
 
     @classmethod
-    @ModelView.button_action('aeat_sii.search_invoices_act_wizard')
-    def search_invoices(cls, reports):
+    @ModelView.button_action('aeat_sii.add_invoices_act_wizard')
+    def add_invoices(cls, reports):
         pass
 
     def submit_issued_invoices(self):
