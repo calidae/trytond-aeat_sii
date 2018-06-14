@@ -170,6 +170,17 @@
           <field name="group" ref="group_aeat_sii_admin"/>
       </record>
 
+      <record model="ir.ui.view" id="add_invoices_start_view_form">
+          <field name="model">aeat.sii.add_invoices.start</field>
+          <field name="type">form</field>
+          <field name="name">add_invoices_start</field>
+      </record>
+
+      <record model="ir.action.wizard" id="add_invoices_act_wizard">
+          <field name="name">Add Invoices</field>
+          <field name="wiz_name">aeat.sii.add_invoices.wizard</field>
+      </record>
+
       <record model="ir.action.act_window" id="act_aeat_sii_issued_report">
           <field name="name">SII Report Issued</field>
           <field name="res_model">aeat.sii.report</field>
