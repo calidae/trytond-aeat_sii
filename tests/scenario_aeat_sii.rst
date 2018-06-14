@@ -291,3 +291,13 @@ Create AEAT Report::
     >>> report.click('load_invoices')
     >>> len(report.lines)
     2
+
+Add another invoice to the report with the wizard::
+
+    >>> add_invoices = Wizard('aeat.sii.add_invoices.wizard', [report])
+    >>> _invoice = add_invoices.form.invoices.new()
+    >>> _invoice.invoice = invoice
+    >>> add_invoices.execute('add')
+    >>> report = AEATReport(report.id)
+    >>> len(report.lines)
+    3
