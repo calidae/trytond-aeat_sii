@@ -25,7 +25,9 @@ def register():
         aeat.SIIReportLineTax,
         aeat_mapping.IssuedTrytonInvoiceMapper,
         aeat_mapping.RecievedTrytonInvoiceMapper,
+        aeat.AddInvoicesStartView,
         module='aeat_sii', type_='model')
     Pool.register(
         load_pkcs12.LoadPKCS12,
+        aeat.AddInvoicesWizard,
         module='aeat_sii', type_='wizard')
