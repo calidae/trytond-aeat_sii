@@ -188,7 +188,11 @@ class Invoice:
 
     def _set_sii_keys(self):
         sii_keys = {}
-        tax = self.taxes and self.taxes[0]
+        tax = None
+        for t in self.taxes:
+            if t.tax_used:
+                tax = t
+                break
         if not tax:
             return sii_keys
         for field in _SII_INVOICE_KEYS:
