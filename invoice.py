@@ -190,13 +190,13 @@ class Invoice:
         sii_keys = {}
         tax = None
         for t in self.taxes:
-            if t.tax_used:
-                tax = t
+            if t.tax.tax_used:
+                tax = t.tax
                 break
         if not tax:
             return sii_keys
         for field in _SII_INVOICE_KEYS:
-            sii_keys[field] = getattr(tax.tax, field)
+            sii_keys[field] = getattr(tax, field)
         return sii_keys
 
     @fields.depends(*_SII_INVOICE_KEYS)
