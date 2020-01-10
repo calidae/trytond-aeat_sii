@@ -21,6 +21,11 @@ _logger = getLogger(__name__)
 
 
 class BaseTrytonInvoiceMapper(Model):
+    # Don't remove this __init__, so it's needed for the correct work with the
+    # pyAEATSII library
+    def __init__(self, *args, **kwargs):
+        self.pool = Pool()
+
     year = attrgetter('move.period.start_date.year')
     period = attrgetter('move.period.start_date.month')
     nif = attrgetter('company.party.sii_vat_code')
