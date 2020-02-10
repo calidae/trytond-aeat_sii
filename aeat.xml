@@ -113,7 +113,7 @@
       </record>
       <menuitem action="act_aeat_sii_report_lines"
           id="menu_aeat_sii_lines_report"
-          parent="menu_aeat_sii_report_menu" sequence="10"
+          parent="menu_aeat_sii_report_menu" sequence="1"
           name="AEAT SII Report Lines"/>
 
       <record model="ir.model.access" id="access_aeat_sii_report_line">
@@ -204,7 +204,7 @@
       </record>
       <menuitem action="act_aeat_sii_issued_report"
           id="menu_aeat_sii_report_issued"
-          parent="menu_aeat_sii_report_menu" sequence="10"
+          parent="menu_aeat_sii_report_menu" sequence="3"
           name="AEAT SII Report Issued"/>
 
       <!--
@@ -231,7 +231,7 @@
 
       <menuitem action="act_aeat_sii_received_report"
           id="menu_aeat_sii_report_received"
-          parent="menu_aeat_sii_report_menu" sequence="10"
+          parent="menu_aeat_sii_report_menu" sequence="5"
           name="AEAT SII Report Received"/>
 
       <!--
@@ -260,7 +260,7 @@
 
       <menuitem action="wizard_aeat_sii_issued_pending"
           id="menu_aeat_sii_pending_issued"
-          parent="aeat_sii.menu_aeat_sii_report_menu" sequence="10"
+          parent="aeat_sii.menu_aeat_sii_report_menu" sequence="7"
           name="Create AEAT SII Report Issued Invoices"/>
 
       <record model="ir.ui.view" id="aeat_sii_received_pending_view_form">
@@ -276,7 +276,7 @@
 
       <menuitem action="wizard_aeat_sii_received_pending"
           id="menu_aeat_sii_pending_received"
-          parent="aeat_sii.menu_aeat_sii_report_menu" sequence="20"
+          parent="aeat_sii.menu_aeat_sii_report_menu" sequence="9"
           name="Create AEAT SII Report Received Invoices"/>
 </data>
 </tryton>
