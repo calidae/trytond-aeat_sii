@@ -170,7 +170,7 @@ AEAT_INVOICE_STATE = [
     ('AceptadaConErrores', 'Accepted with Errors'),  # Shame on AEAT
     ('Anulada', 'Deleted'),
     ('Incorrecto', 'Rejected'),
-    ('duplicated_unsubscribed', 'Duplicated / Unsubscribed'),   
+    ('duplicated_unsubscribed', 'Duplicated / Unsubscribed'),
 ]
 
 
@@ -606,7 +606,8 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                         headers, [eval(line.sii_header) for line in self.lines],
                         mapper=mapper)
                 except Exception as e:
-                    self.raise_user_error(tools.unaccent(str(e)))
+                    raise UserError(gettext('aeat_sii.msg_service_message',
+                        message=tools.unaccent(str(e))))
 
             if not self.response:
                 self.state == 'sending'
@@ -753,7 +754,8 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                         headers, (line.invoice for line in self.lines),
                         mapper=mapper)
                 except Exception as e:
-                    self.raise_user_error(tools.unaccent(str(e)))
+                    raise UserError(gettext('aeat_sii.msg_service_message',
+                        message=tools.unaccent(str(e))))
 
             if not self.response:
                 self.state == 'sending'
@@ -784,7 +786,8 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                         headers, [eval(line.sii_header) for line in self.lines],
                         mapper=mapper)
                 except Exception as e:
-                    self.raise_user_error(tools.unaccent(str(e)))
+                    raise UserError(gettext('aeat_sii.msg_service_message',
+                        message=tools.unaccent(str(e))))
 
             if not self.response:
                 self.state == 'sending'
