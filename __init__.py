@@ -20,6 +20,8 @@ def register():
         party.PartyIdentifier,
         company.Company,
         invoice.Invoice,
+        invoice.ResetSIIKeysStart,
+        invoice.ResetSIIKeysEnd,
         load_pkcs12.LoadPKCS12Start,
         aeat.CreateSiiIssuedPendingView,
         aeat.CreateSiiReceivedPendingView,
@@ -38,6 +40,7 @@ def register():
         depends=['purchase'],
         module='aeat_sii', type_='model')
     Pool.register(
+        invoice.ResetSIIKeys,
         aeat.CreateSiiIssuedPending,
         aeat.CreateSiiReceivedPending,
         load_pkcs12.LoadPKCS12,

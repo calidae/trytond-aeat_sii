@@ -70,6 +70,10 @@ msgctxt "field:account.tax,sii_issued_key:"
 msgid "Issued Key"
 msgstr "Clave emisión"
 
+msgctxt "field:account.tax,sii_operation_key:"
+msgid "SII Operation Key"
+msgstr "SII Clave operación"
+
 msgctxt "field:account.tax,sii_received_key:"
 msgid "Received Key"
 msgstr "Clave recibidas"
@@ -101,6 +105,10 @@ msgstr "Clave intracomunitaria"
 msgctxt "field:account.tax.template,sii_issued_key:"
 msgid "Issued Key"
 msgstr "Clave emisión"
+
+msgctxt "field:account.tax.template,sii_operation_key:"
+msgid "SII Operation Key"
+msgstr "SII Clave operación"
 
 msgctxt "field:account.tax.template,sii_received_key:"
 msgid "Received Key"
@@ -207,7 +215,7 @@ msgid "Period"
 msgstr "Período"
 
 msgctxt "field:aeat.sii.report,rec_name:"
-msgid "Record Name"
+msgid "Name"
 msgstr "Nombre"
 
 msgctxt "field:aeat.sii.report,response:"
@@ -271,7 +279,7 @@ msgid "REAGYP Rate"
 msgstr "Importe REAGYP"
 
 msgctxt "field:aeat.sii.report.line.tax,rec_name:"
-msgid "Record Name"
+msgid "Name"
 msgstr "Nombre"
 
 msgctxt "field:aeat.sii.report.line.tax,surcharge_amount:"
@@ -379,7 +387,7 @@ msgid "Presenter"
 msgstr "Presentación"
 
 msgctxt "field:aeat.sii.report.lines,rec_name:"
-msgid "Record Name"
+msgid "Name"
 msgstr "Nombre"
 
 msgctxt "field:aeat.sii.report.lines,report:"
@@ -478,6 +486,14 @@ msgctxt "model:aeat.sii.report.lines,name:"
 msgid "AEAT SII Issued"
 msgstr "Emitidas"
 
+msgctxt "model:aeat.sii.reset.keys.end,name:"
+msgid "Reset to default SII Keys End"
+msgstr "Fin Restablecimiento por defecto de las claves del SII"
+
+msgctxt "model:aeat.sii.reset.keys.start,name:"
+msgid "Reset to default SII Keys Start"
+msgstr "Inicio Restablecimiento por defecto de las claves del SII"
+
 msgctxt "model:ir.action,name:"
 msgid "SII Report Intracommunity"
 msgstr "Informe Intracomunitarias"
@@ -510,6 +526,10 @@ msgctxt "model:ir.action,name:act_aeat_sii_report_lines"
 msgid "SII Report Lines"
 msgstr "Líneas informe SII"
 
+msgctxt "model:ir.action,name:act_aeat_sii_reset_keys"
+msgid "Reset AEAT SII Keys"
+msgstr "Restablecimiento claves del SII"
+
 msgctxt "model:ir.action,name:wizard_aeat_sii_issued_pending"
 msgid "AEAT SII Pending Issued Invoices"
 msgstr "AEAT SII Facturas Enviadas Pendientes"
@@ -526,7 +546,6 @@ msgctxt "model:ir.message,text:msg_error_loading_pkcs12"
 msgid "Unable to load PKCS12: %(message)s"
 msgstr "No se ha podido Cargar PKCS12: %(message)s"
 
-#, fuzzy
 msgctxt "model:ir.message,text:msg_invoices_sii"
 msgid ""
 "The next invoices are related with SII books:\n"
@@ -559,10 +578,6 @@ msgstr ""
 "Hay libros en estado Borrador y/o Confirmado. No se generará ningún llibro "
 "hasta que haya enviado los pendientes."
 
-msgctxt "model:ir.model.button,string:aeat_sii_invoice_reset_sii_keys_button"
-msgid "Reset SII Keys"
-msgstr "Reiniciar claves SII"
-
 msgctxt "model:ir.model.button,string:cancel_button"
 msgid "Cancel"
 msgstr "Cancel·lar"
@@ -578,6 +593,10 @@ msgstr "Borrador"
 msgctxt "model:ir.model.button,string:load_invoices_button"
 msgid "Load Invoices"
 msgstr "Cargar facturas"
+
+msgctxt "model:ir.model.button,string:process_response_button"
+msgid "Process Response"
+msgstr "Procesar respuesta"
 
 msgctxt "model:ir.model.button,string:send_button"
 msgid "Send"
@@ -1111,6 +1130,60 @@ msgctxt "selection:account.tax,sii_issued_key:"
 msgid "Special scheme for travel agencies"
 msgstr "Régimen especial de las agencias de viajes"
 
+msgctxt "selection:account.tax,sii_operation_key:"
+msgid "Corrected Invoice (Art 80.1, 80.2 and 80.6 and error grounded in law)"
+msgstr "Factura rectificativa (Art 80.1, 80.2 y 80.6 LIVA)"
+
+msgctxt "selection:account.tax,sii_operation_key:"
+msgid "Corrected Invoice (Art. 80.3)"
+msgstr "Fatura rectificativa (Art 80.3)"
+
+msgctxt "selection:account.tax,sii_operation_key:"
+msgid "Corrected Invoice (Other)"
+msgstr "Factura rectificativa [Resto de causas]"
+
+msgctxt "selection:account.tax,sii_operation_key:"
+msgid "Corrected Invoice in simplified invoices"
+msgstr "Factura Rectificativa en facturas simplificadas"
+
+msgctxt "selection:account.tax,sii_operation_key:"
+msgid "Credit Note (Art 80.4)"
+msgstr "Facura rectificativa (Art. 80.4)"
+
+msgctxt "selection:account.tax,sii_operation_key:"
+msgid "Duty - Complementary clearing"
+msgstr "Aduanas - Liquidación complementaria"
+
+msgctxt "selection:account.tax,sii_operation_key:"
+msgid "Import (DUA)"
+msgstr "Importaciones (DUA)"
+
+msgctxt "selection:account.tax,sii_operation_key:"
+msgid "Invoice (Art 6.7.3 y 7.3 of RD1619/2012)"
+msgstr "Factura (Art. 6, 7.2 y 7.3 del RD 1619/2012)"
+
+msgctxt "selection:account.tax,sii_operation_key:"
+msgid "Invoice issued to replace simplified invoices issued and filed"
+msgstr ""
+"Factura emitida en sustitución de facturas simplificadasfacturadas y "
+"declaradas"
+
+msgctxt "selection:account.tax,sii_operation_key:"
+msgid "Invoice summary entry"
+msgstr "Asiento resumen de facturas"
+
+msgctxt "selection:account.tax,sii_operation_key:"
+msgid "Other accounting documents"
+msgstr "Justificantes contables"
+
+msgctxt "selection:account.tax,sii_operation_key:"
+msgid ""
+"Simplified Invoice (ticket) and Invoices without destination identidication "
+"(Art 6.1.d of RD1619/2012)"
+msgstr ""
+"Factura Simplificada y y Facturas sin identificación del destinatario (Art. "
+"6.1.d RD 1619/2012)"
+
 msgctxt "selection:account.tax,sii_received_key:"
 msgid ""
 "Activities subject to Canary Islands General Indirect Tax/Tax on Production,"
@@ -1342,6 +1415,60 @@ msgstr "Régimen especial del oro de inversión"
 msgctxt "selection:account.tax.template,sii_issued_key:"
 msgid "Special scheme for travel agencies"
 msgstr "Régimen especial de las agencias de viajes"
+
+msgctxt "selection:account.tax.template,sii_operation_key:"
+msgid "Corrected Invoice (Art 80.1, 80.2 and 80.6 and error grounded in law)"
+msgstr "Factura rectificativa (Art 80.1, 80.2 y 80.6 LIVA)"
+
+msgctxt "selection:account.tax.template,sii_operation_key:"
+msgid "Corrected Invoice (Art. 80.3)"
+msgstr "Fatura rectificativa (Art 80.3)"
+
+msgctxt "selection:account.tax.template,sii_operation_key:"
+msgid "Corrected Invoice (Other)"
+msgstr "Factura rectificativa [Resto de causas]"
+
+msgctxt "selection:account.tax.template,sii_operation_key:"
+msgid "Corrected Invoice in simplified invoices"
+msgstr "Factura Rectificativa en facturas simplificadas"
+
+msgctxt "selection:account.tax.template,sii_operation_key:"
+msgid "Credit Note (Art 80.4)"
+msgstr "Facura rectificativa (Art. 80.4)"
+
+msgctxt "selection:account.tax.template,sii_operation_key:"
+msgid "Duty - Complementary clearing"
+msgstr "Aduanas - Liquidación complementaria"
+
+msgctxt "selection:account.tax.template,sii_operation_key:"
+msgid "Import (DUA)"
+msgstr "Importaciones (DUA)"
+
+msgctxt "selection:account.tax.template,sii_operation_key:"
+msgid "Invoice (Art 6.7.3 y 7.3 of RD1619/2012)"
+msgstr "Factura (Art. 6, 7.2 y 7.3 del RD 1619/2012)"
+
+msgctxt "selection:account.tax.template,sii_operation_key:"
+msgid "Invoice issued to replace simplified invoices issued and filed"
+msgstr ""
+"Factura emitida en sustitución de facturas simplificadasfacturadas y "
+"declaradas"
+
+msgctxt "selection:account.tax.template,sii_operation_key:"
+msgid "Invoice summary entry"
+msgstr "Asiento resumen de facturas"
+
+msgctxt "selection:account.tax.template,sii_operation_key:"
+msgid "Other accounting documents"
+msgstr "Justificantes contables"
+
+msgctxt "selection:account.tax.template,sii_operation_key:"
+msgid ""
+"Simplified Invoice (ticket) and Invoices without destination identidication "
+"(Art 6.1.d of RD1619/2012)"
+msgstr ""
+"Factura Simplificada y y Facturas sin identificación del destinatario (Art. "
+"6.1.d RD 1619/2012)"
 
 msgctxt "selection:account.tax.template,sii_received_key:"
 msgid ""
@@ -1701,6 +1828,24 @@ msgctxt "view:aeat.sii.report:"
 msgid "Send"
 msgstr "Enviar"
 
+msgctxt "view:aeat.sii.reset.keys.end:"
+msgid "The AEAT SII Keys have been reset."
+msgstr "Las claves del SII se han restablecido."
+
+msgctxt "view:aeat.sii.reset.keys.start:"
+msgid "Note that this operation may take a few minutes."
+msgstr "Tenga en cuenta que esta operación puede tardar unos minutos."
+
+msgctxt "view:aeat.sii.reset.keys.start:"
+msgid "Only will be reset the draft invoices."
+msgstr "Solo serán restablecidas las facturas en borrador. "
+
+msgctxt "view:aeat.sii.reset.keys.start:"
+msgid "The AEAT SII Keys for selected invoices will be reset to default."
+msgstr ""
+"Las claves del SII de las facturas seleccionadas serán restablecidos a "
+"valores por defecto."
+
 msgctxt "view:company.company:"
 msgid "Certificate"
 msgstr "Certificado"
@@ -1728,3 +1873,15 @@ msgstr "Crear"
 msgctxt "wizard_button:aeat.sii.received.pending,view,end:"
 msgid "Cancel"
 msgstr "Cancelar"
+
+msgctxt "wizard_button:aeat.sii.reset.keys,done,end:"
+msgid "Ok"
+msgstr "Aceptar"
+
+msgctxt "wizard_button:aeat.sii.reset.keys,start,end:"
+msgid "Cancel"
+msgstr "Cancel·lar"
+
+msgctxt "wizard_button:aeat.sii.reset.keys,start,reset:"
+msgid "Reset"
+msgstr "Reiniciar"

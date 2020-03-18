@@ -8,6 +8,7 @@ from trytond.pyson import Eval, Bool
 from trytond.transaction import Transaction
 from trytond.i18n import gettext
 from trytond.exceptions import UserError, UserWarning
+from trytond.wizard import Wizard, StateView, StateTransition, Button
 from sql import Null
 from sql.aggregate import Max
 from trytond.tools import grouped_slice
@@ -17,10 +18,10 @@ from .aeat import (
     EXCEMPTION_CAUSE, INTRACOMUNITARY_TYPE, COMMUNICATION_TYPE)
 
 
-__all__ = ['Invoice']
+__all__ = ['Invoice', 'ResetSIIKeysStart', 'ResetSIIKeys', 'ResetSIIKeysEnd']
 
-_SII_INVOICE_KEYS = ['sii_book_key', 'sii_issued_key', 'sii_received_key',
-        'sii_subjected_key', 'sii_excemption_key',
+_SII_INVOICE_KEYS = ['sii_book_key', 'sii_operation_key', 'sii_issued_key',
+        'sii_received_key', 'sii_subjected_key', 'sii_excemption_key',
         'sii_intracomunity_key']
 
 MAX_SII_LINES = 300
@@ -67,11 +68,6 @@ class Invoice(metaclass=PoolMeta):
             'sii_excemption_key', 'sii_intracomunity_key','sii_pending_sending',
             'sii_communication_type', 'sii_state', 'sii_header']
         cls._check_modify_exclude += sii_fields
-        cls._buttons.update({
-            'reset_sii_keys': {
-                'invisible': Bool(Eval('sii_state', None)),
-                'icon': 'tryton-executable'}
-        })
         if hasattr(cls, '_intercompany_excluded_fields'):
             cls._intercompany_excluded_fields += sii_fields
             cls._intercompany_excluded_fields += ['sii_records']
@@ -406,12 +402,17 @@ class Invoice(metaclass=PoolMeta):
 
     @classmethod
     @ModelView.button
-    def reset_sii_keys(cls, records):
+    def reset_sii_keys(cls, invoices):
         to_write = []
-        for record in records:
-            record._set_sii_keys()
-            record.sii_operation_key = record._get_sii_operation_key()
-            to_write.extend(([record], record._save_values))
+        for invoice in invoices:
+            if invoice.state != 'draft':
+                continue
+            for field in _SII_INVOICE_KEYS:
+                setattr(invoice, field, None)
+            invoice._set_sii_keys()
+            if not invoice.sii_operation_key:
+                invoice.sii_operation_key = invoice._get_sii_operation_key()
+            to_write.extend(([invoice], invoice._save_values))
 
         if to_write:
             cls.write(*to_write)
@@ -465,7 +466,9 @@ class Invoice(metaclass=PoolMeta):
         for invoice in invoices:
             values = {}
             if invoice.sii_book_key:
-                values['sii_operation_key'] = invoice._get_sii_operation_key()
+                if not invoice.sii_operation_key:
+                    values['sii_operation_key'] =\
+                        invoice._get_sii_operation_key()
                 values['sii_pending_sending'] = True
                 values['sii_header'] = str(cls.get_sii_header(invoice, False))
                 to_write.extend(([invoice], values))
@@ -495,3 +498,42 @@ class Invoice(metaclass=PoolMeta):
             mapper = ReceivedMapper()
             header = mapper.build_delete_request(invoice)
         return header
+
+
+class ResetSIIKeysStart(ModelView):
+    """
+    Reset to default SII Keys Start
+    """
+    __name__ = "aeat.sii.reset.keys.start"
+
+
+class ResetSIIKeysEnd(ModelView):
+    """
+    Reset to default SII Keys End
+    """
+    __name__ = "aeat.sii.reset.keys.end"
+
+
+class ResetSIIKeys(Wizard):
+    """
+    Reset to default SII Keys
+    """
+    __name__ = "aeat.sii.reset.keys"
+
+    start = StateView('aeat.sii.reset.keys.start',
+        'aeat_sii.aeat_sii_reset_keys_start_view', [
+            Button('Cancel', 'end', 'tryton-cancel'),
+            Button('Reset', 'reset', 'tryton-ok', default=True),
+            ])
+    reset = StateTransition()
+    done = StateView('aeat.sii.reset.keys.end',
+        'aeat_sii.aeat_sii_reset_keys_end_view', [
+            Button('Ok', 'end', 'tryton-ok', default=True),
+            ])
+
+    def transition_reset(self):
+        pool = Pool()
+        Invoice = pool.get('account.invoice')
+        invoices = Invoice.browse(Transaction().context['active_ids'])
+        Invoice.reset_sii_keys(invoices)
+        return 'done'
