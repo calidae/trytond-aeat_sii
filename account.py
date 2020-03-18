@@ -2,7 +2,7 @@
 # copyright notices and license terms.
 from trytond.model import fields
 from trytond.pool import PoolMeta
-from .aeat import (BOOK_KEY, SEND_SPECIAL_REGIME_KEY,
+from .aeat import (BOOK_KEY, OPERATION_KEY, SEND_SPECIAL_REGIME_KEY,
     RECEIVE_SPECIAL_REGIME_KEY, IVA_SUBJECTED, EXCEMPTION_CAUSE,
     INTRACOMUNITARY_TYPE)
 
@@ -14,6 +14,7 @@ class TemplateTax(metaclass=PoolMeta):
     __name__ = 'account.tax.template'
 
     sii_book_key = fields.Selection(BOOK_KEY, 'Book Key')
+    sii_operation_key = fields.Selection(OPERATION_KEY, 'SII Operation Key')
     sii_issued_key = fields.Selection(SEND_SPECIAL_REGIME_KEY, 'Issued Key')
     sii_received_key = fields.Selection(RECEIVE_SPECIAL_REGIME_KEY,
         'Received Key')
@@ -26,8 +27,8 @@ class TemplateTax(metaclass=PoolMeta):
 
     def _get_tax_value(self, tax=None):
         res = super(TemplateTax, self)._get_tax_value(tax)
-        for field in ('sii_book_key', 'sii_issued_key', 'sii_subjected_key',
-                'sii_excemption_key', 'sii_received_key',
+        for field in ('sii_book_key', 'sii_operation_key', 'sii_issued_key',
+                'sii_subjected_key', 'sii_excemption_key', 'sii_received_key',
                 'sii_intracomunity_key', 'tax_used', 'invoice_used'):
 
             if not tax or getattr(tax, field) != getattr(self, field):
@@ -40,6 +41,7 @@ class Tax(metaclass=PoolMeta):
     __name__ = 'account.tax'
 
     sii_book_key = fields.Selection(BOOK_KEY, 'Book Key')
+    sii_operation_key = fields.Selection(OPERATION_KEY, 'SII Operation Key')
     sii_issued_key = fields.Selection(SEND_SPECIAL_REGIME_KEY, 'Issued Key')
     sii_received_key = fields.Selection(RECEIVE_SPECIAL_REGIME_KEY,
         'Received Key')

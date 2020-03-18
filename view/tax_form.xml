@@ -10,6 +10,8 @@ contains the full copyright notices and license terms. -->
             <field name="invoice_used"/>
             <label name="sii_book_key"/>
             <field name="sii_book_key"/>
+            <label name="sii_operation_key"/>
+            <field name="sii_operation_key"/>
             <label name="sii_issued_key"/>
             <field name="sii_issued_key"/>
             <label name="sii_received_key"/>

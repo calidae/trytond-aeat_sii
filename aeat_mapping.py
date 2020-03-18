@@ -37,10 +37,14 @@ class BaseTrytonInvoiceMapper(Model):
 
     def counterpart_nif(self, invoice):
         nif = ''
-        if invoice.party.tax_identifier:
-            nif = invoice.party.tax_identifier.code
-        elif invoice.party.identifiers:
-            nif = invoice.party.identifiers[0].code
+        if invoice.sii_operation_key == 'F5':
+            # Assume that the company party is configured correctly.
+            nif = invoice.company.party.tax_identifier.code
+        else:
+            if invoice.party.tax_identifier:
+                nif = invoice.party.tax_identifier.code
+            elif invoice.party.identifiers:
+                nif = invoice.party.identifiers[0].code
         if nif.startswith('ES'):
             nif = nif[2:]
         return nif
@@ -76,7 +80,12 @@ class BaseTrytonInvoiceMapper(Model):
             taxes_used[parent.id] = base
         return (taxes_amount + taxes_base)
 
-    counterpart_id_type = attrgetter('party.sii_identifier_type')
+    def counterpart_id_type(self, invoice):
+        if invoice.sii_operation_key == 'F5':
+            return attrgetter('company.party.sii_identifier_type')
+        else:
+            return attrgetter('party.sii_identifier_type')
+
     counterpart_id = counterpart_nif
     untaxed_amount = get_invoice_untaxed
     total_amount = get_invoice_total
@@ -85,7 +94,10 @@ class BaseTrytonInvoiceMapper(Model):
     tax_amount = get_tax_amount
 
     def counterpart_name(self, invoice):
-        return tools.unaccent(invoice.party.name)
+        if invoice.sii_operation_key == 'F5':
+            return tools.unaccent(invoice.company.party.name)
+        else:
+            return tools.unaccent(invoice.party.name)
 
     def description(self, invoice):
         if invoice.description:
