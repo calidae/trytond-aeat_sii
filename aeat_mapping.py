@@ -77,9 +77,9 @@ class BaseTrytonInvoiceMapper(Model):
 
     def counterpart_id_type(self, invoice):
         if invoice.sii_operation_key == 'F5':
-            return attrgetter('company.party.sii_identifier_type')
+            return invoice.company.party.sii_identifier_type
         else:
-            return attrgetter('party.sii_identifier_type')
+            return invoice.party.sii_identifier_type
 
     counterpart_id = counterpart_nif
     untaxed_amount = get_invoice_untaxed
