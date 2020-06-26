@@ -360,8 +360,8 @@ class Invoice(metaclass=PoolMeta):
 
         return result
 
-    def _credit(self):
-        credit = super(Invoice, self)._credit()
+    def _credit(self, **values):
+        credit = super(Invoice, self)._credit(**values)
         for field in _SII_INVOICE_KEYS:
             setattr(credit, field, getattr(self, field))
 
