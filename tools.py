@@ -6,11 +6,6 @@ from logging import getLogger
 from lxml import etree
 from zeep import Plugin
 
-try:
-    from itertools import ifilter as filter
-except ImportError:
-    pass
-
 src_chars = "/*+?Â¿!$[]{}@#`^:;<>=~%\\"
 dst_chars = "________________________"
 

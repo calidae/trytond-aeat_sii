@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 # The COPYRIGHT file at the top level of this repository contains the full
 # copyright notices and license terms.
-import unicodedata
 from logging import getLogger
 from decimal import Decimal
 from datetime import datetime
@@ -1160,9 +1159,7 @@ class SIIReportLine(ModelSQL, ModelView):
 
     @classmethod
     def __register__(cls, module_name):
-        cursor = Transaction().connection.cursor()
         table = cls.__table_handler__(module_name)
-        sql_table = cls.__table__()
 
         exist_sii_excemption_key = table.column_exist('exemption_key')
         if exist_sii_excemption_key:
