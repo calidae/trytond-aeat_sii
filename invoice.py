@@ -58,9 +58,7 @@ class Invoice(metaclass=PoolMeta):
 
     @classmethod
     def __register__(cls, module_name):
-        cursor = Transaction().connection.cursor()
         table = cls.__table_handler__(module_name)
-        sql_table = cls.__table__()
 
         exist_sii_intracomunity_key = table.column_exist('sii_intracomunity_key')
         exist_sii_subjected_key = table.column_exist('sii_subjected_key')
