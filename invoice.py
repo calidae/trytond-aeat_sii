@@ -48,10 +48,10 @@ class Invoice(metaclass=PoolMeta):
     @classmethod
     def __setup__(cls):
         super(Invoice, cls).__setup__()
-        sii_fields = ['sii_book_key', 'sii_operation_key',
-            'sii_received_key', 'sii_issued_key', 'sii_state',
-            'sii_pending_sending', 'sii_communication_type', 'sii_header']
-        cls._check_modify_exclude += sii_fields
+        sii_fields = {'sii_book_key', 'sii_operation_key', 'sii_received_key',
+            'sii_issued_key', 'sii_state', 'sii_pending_sending',
+            'sii_communication_type', 'sii_header'}
+        cls._check_modify_exclude |= sii_fields
         if hasattr(cls, '_intercompany_excluded_fields'):
             cls._intercompany_excluded_fields += sii_fields
             cls._intercompany_excluded_fields += ['sii_records']
