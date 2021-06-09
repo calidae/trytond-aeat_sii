@@ -9,9 +9,6 @@ from zeep import helpers
 import json
 from collections import namedtuple
 
-from pyAEATsii import service
-from pyAEATsii import mapping
-
 from trytond.model import ModelSQL, ModelView, fields, Workflow
 from trytond.wizard import Wizard, StateView, StateAction, Button
 from trytond.pyson import Eval, Bool, PYSONEncoder
@@ -21,6 +18,7 @@ from trytond.config import config
 from trytond.i18n import gettext
 from trytond.exceptions import UserError
 from . import tools
+from . import service
 
 
 __all__ = [
@@ -50,7 +48,6 @@ def _date(x):
 
 def _datetime(x):
     return datetime.strptime(x, "%d-%m-%Y %H:%M:%S")
-
 
 COMMUNICATION_TYPE = [   # L0
     (None, ''),
@@ -173,7 +170,6 @@ AEAT_INVOICE_STATE = [
     ('duplicated_unsubscribed', 'Duplicated / Unsubscribed'),
 ]
 
-
 PROPERTY_STATE = [  # L6
     ('0', ''),
     ('1', '1. Property with a land register reference located in any part '
@@ -185,7 +181,6 @@ PROPERTY_STATE = [  # L6
     ('4', '4. Property located abroad'),
     ]
 
-
 # L7 - Iva Subjected
 IVA_SUBJECTED = [
     (None, ''),
@@ -195,8 +190,8 @@ IVA_SUBJECTED = [
         'and VAT reverse charge')
     ]
 
-# L9 - Excemption cause
-EXCEMPTION_CAUSE = [
+# L9 - Exemption cause
+EXEMPTION_CAUSE = [
     (None, ''),
     ('E1', 'Exempt on account of Article 20'),
     ('E2', 'Exempt on account of Article 21'),
@@ -204,51 +199,8 @@ EXCEMPTION_CAUSE = [
     ('E4', 'Exempt on account of Article 23 and Article 24'),
     ('E5', 'Exempt on account of Article 25'),
     ('E6', 'Exempt on other grounds'),
+    ('NotSubject', 'Not Subject'),
     ]
-
-# L11 Payment Type
-PAYMENT_TYPE = [
-    ('01', 'Transfer'),
-    ('02', 'Cheque'),
-    ('03', 'Not to be collected/paid (deadline for accrual/forced accrual '
-        'as part of insolvency proceedings)'),
-    ('04', 'Other methods of collection/payment'),
-    ('05', 'Bank debit order'),
-    ]
-
-# L12
-INTRACOMUNITARY_TYPE = [
-    (None, ''),
-    ('A', 'The transmission or receipt of goods to undertake partial reports '
-        'or works stipulated in Article 70, section one, Number 7 '
-        'of the Tax Law (Law 37/1992)'),
-    ('B', 'Transfers of goods or intra-Community acquisitions of goods listed '
-        'in Article 9.3 and Article 16.2 of the Tax Law (Law 37/1992)'),
-    ]
-
-
-def remove_accents(unicode_string):
-    if isinstance(unicode_string, str):
-        unicode_string_bak = unicode_string
-        try:
-            unicode_string = unicode_string_bak.decode('iso-8859-1')
-        except UnicodeDecodeError:
-            try:
-                unicode_string = unicode_string_bak.decode('utf-8')
-            except UnicodeDecodeError:
-                return unicode_string_bak
-
-    if not isinstance(unicode_string, str):
-        return unicode_string
-
-    # From http://www.leccionespracticas.com/uncategorized/eliminar-tildes-con-python-solucionado
-    unicode_string_nfd = ''.join(
-        (c for c in unicodedata.normalize('NFD', unicode_string)
-            if (unicodedata.category(c) != 'Mn'
-                or c in ('\\u0327', '\\u0303'))  # ç or ñ
-            ))
-    # It converts nfd to nfc to allow unicode.decode()
-    return unicodedata.normalize('NFC', unicode_string_nfd)
 
 _STATES = {
     'readonly': Eval('state') != 'draft',
@@ -334,6 +286,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         },
         depends=['state'])
     response = fields.Text('Response', readonly=True)
+    aeat_register = fields.Text('Register sended to AEAT Webservice', readonly=True)
 
     @classmethod
     def __setup__(cls):
@@ -545,6 +498,8 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             _logger.debug('Searching invoices for SII report: %s', domain)
 
             for invoice in Invoice.search(domain):
+                if not all(l.report != report for l in invoice.sii_records):
+                    continue
                 to_create.append({
                     'report': report,
                     'invoice': invoice,
@@ -554,14 +509,11 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             ReportLine.create(to_create)
 
     def submit_issued_invoices(self):
-        pool = Pool()
-        mapper = pool.get('aeat.sii.issued.invoice.mapper')(pool=pool)
-
         if self.state != 'confirmed':
             _logger.info('This report %s has already been sended', self.id)
         else:
             _logger.info('Sending report %s to AEAT SII', self.id)
-            headers = mapping.get_headers(
+            headers = tools.get_headers(
                 name=tools.unaccent(self.company.party.name),
                 vat=self.company_vat,
                 comm_kind=self.operation_type,
@@ -571,9 +523,8 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                 srv = service.bind_issued_invoices_service(
                     crt, key, test=SII_TEST)
                 try:
-                    res = srv.submit(
-                        headers, (line.invoice for line in self.lines),
-                        mapper=mapper)
+                    res, request = srv.submit(headers, (l.invoice for l in self.lines))
+                    self.aeat_register = request
                 except Exception as e:
                     raise UserError(tools.unaccent(str(e)))
 
@@ -585,14 +536,11 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         self._save_response(self.response)
 
     def delete_issued_invoices(self):
-        pool = Pool()
-        mapper = pool.get('aeat.sii.issued.invoice.mapper')(pool=pool)
-
         if self.state != 'confirmed':
             _logger.info('This report %s has already been sended', self.id)
         else:
             _logger.info('Deleting report %s from AEAT SII', self.id)
-            headers = mapping.get_headers(
+            headers = tools.get_headers(
                 name=tools.unaccent(self.company.party.name),
                 vat=self.company_vat,
                 comm_kind=self.operation_type,
@@ -603,8 +551,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                     crt, key, test=SII_TEST)
                 try:
                     res = srv.cancel(
-                        headers, [eval(line.sii_header) for line in self.lines],
-                        mapper=mapper)
+                        headers, [eval(line.sii_header) for line in self.lines])
                 except Exception as e:
                     raise UserError(gettext('aeat_sii.msg_service_message',
                         message=tools.unaccent(str(e))))
@@ -619,11 +566,10 @@ class SIIReport(Workflow, ModelSQL, ModelView):
     def query_issued_invoices(self, last_invoice=None):
         pool = Pool()
         Invoice = pool.get('account.invoice')
-        mapper = pool.get('aeat.sii.issued.invoice.mapper')(pool=pool)
         SIIReportLine = pool.get('aeat.sii.report.lines')
         SIIReportLineTax = pool.get('aeat.sii.report.line.tax')
 
-        headers = mapping.get_headers(
+        headers = tools.get_headers(
             name=tools.unaccent(self.company.party.name),
             vat=self.company_vat,
             comm_kind=self.operation_type,
@@ -636,7 +582,6 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                 headers,
                 year=self.period.start_date.year,
                 period=self.period.start_date.month,
-                mapper=mapper,
                 last_invoice=last_invoice)
 
         registers = res.RegistroRespuestaConsultaLRFacturasEmitidas
@@ -683,7 +628,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                 taxes = SIIReportLineTax.create(taxes_to_create)
             elif sujeta.Exenta:
                 exemption = sujeta.Exenta.DetalleExenta[0].CausaExencion
-                for exempt in EXCEMPTION_CAUSE:
+                for exempt in EXEMPTION_CAUSE:
                     if exempt[0] == exemption:
                         exemption = exempt[1]
                         break
@@ -710,7 +655,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                     reg.DatosFacturaEmitida.ClaveRegimenEspecialOTrascendencia),
                 'total_amount': _decimal(reg.DatosFacturaEmitida.ImporteTotal),
                 'taxes': [('add', [t.id for t in taxes])] if taxes else [],
-                'exemption_key': exemption,
+                'exemption_cause': exemption,
                 'counterpart_name': (
                     reg.DatosFacturaEmitida.Contraparte.NombreRazon
                     if reg.DatosFacturaEmitida.Contraparte else None),
@@ -733,14 +678,11 @@ class SIIReport(Workflow, ModelSQL, ModelView):
             self.query_issued_invoices(last_invoice=last_invoice)
 
     def submit_recieved_invoices(self):
-        pool = Pool()
-        mapper = pool.get('aeat.sii.recieved.invoice.mapper')(pool=pool)
-
         if self.state != 'confirmed':
             _logger.info('This report %s has already been sended', self.id)
         else:
             _logger.info('Sending report %s to AEAT SII', self.id)
-            headers = mapping.get_headers(
+            headers = tools.get_headers(
                 name=tools.unaccent(self.company.party.name),
                 vat=self.company_vat,
                 comm_kind=self.operation_type,
@@ -750,9 +692,8 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                 srv = service.bind_recieved_invoices_service(
                     crt, key, test=SII_TEST)
                 try:
-                    res = srv.submit(
-                        headers, (line.invoice for line in self.lines),
-                        mapper=mapper)
+                    res, request = srv.submit(headers, (l.invoice for l in self.lines))
+                    self.aeat_register = request
                 except Exception as e:
                     raise UserError(gettext('aeat_sii.msg_service_message',
                         message=tools.unaccent(str(e))))
@@ -765,14 +706,11 @@ class SIIReport(Workflow, ModelSQL, ModelView):
         self._save_response(self.response)
 
     def delete_recieved_invoices(self):
-        pool = Pool()
-        mapper = pool.get('aeat.sii.recieved.invoice.mapper')(pool=pool)
-
         if self.state != 'confirmed':
             _logger.info('This report %s has already been sended', self.id)
         else:
             _logger.info('Deleting report %s from AEAT SII', self.id)
-            headers = mapping.get_headers(
+            headers = tools.get_headers(
                 name=tools.unaccent(self.company.party.name),
                 vat=self.company_vat,
                 comm_kind=self.operation_type,
@@ -783,8 +721,7 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                     srv = service.bind_recieved_invoices_service(
                         crt, key, test=SII_TEST)
                     res = srv.cancel(
-                        headers, [eval(line.sii_header) for line in self.lines],
-                        mapper=mapper)
+                        headers, [eval(line.sii_header) for line in self.lines])
                 except Exception as e:
                     raise UserError(gettext('aeat_sii.msg_service_message',
                         message=tools.unaccent(str(e))))
@@ -818,11 +755,10 @@ class SIIReport(Workflow, ModelSQL, ModelView):
     def query_recieved_invoices(self, last_invoice=None):
         pool = Pool()
         Invoice = pool.get('account.invoice')
-        mapper = pool.get('aeat.sii.recieved.invoice.mapper')(pool=pool)
         SIIReportLine = pool.get('aeat.sii.report.lines')
         SIIReportLineTax = pool.get('aeat.sii.report.line.tax')
 
-        headers = mapping.get_headers(
+        headers = tools.get_headers(
             name=tools.unaccent(self.company.party.name),
             vat=self.company_vat,
             comm_kind=self.operation_type,
@@ -835,7 +771,6 @@ class SIIReport(Workflow, ModelSQL, ModelView):
                 headers,
                 year=self.period.start_date.year,
                 period=self.period.start_date.month,
-                mapper=mapper,
                 last_invoice=last_invoice)
 
         _logger.debug(res)
@@ -985,9 +920,21 @@ class SIIReportLine(ModelSQL, ModelView):
     invoice_operation_key = fields.Function(
         fields.Selection(OPERATION_KEY, 'SII Operation Key'),
         'get_invoice_operation_key')
-    exemption_key = fields.Char('Exemption Cause', readonly=True)
+    exemption_cause = fields.Char('Exemption Cause', readonly=True)
     aeat_register = fields.Text('Register from AEAT Webservice', readonly=True)
     sii_header = fields.Text('Header')
+
+    @classmethod
+    def __register__(cls, module_name):
+        cursor = Transaction().connection.cursor()
+        table = cls.__table_handler__(module_name)
+        sql_table = cls.__table__()
+
+        exist_sii_excemption_key = table.column_exist('exemption_key')
+        if exist_sii_excemption_key:
+            table.column_rename('exemption_key', 'exemption_cause')
+
+        super(SIIReportLine, cls).__register__(module_name)
 
     def get_invoice_operation_key(self, name):
         return self.invoice.sii_operation_key if self.invoice else None

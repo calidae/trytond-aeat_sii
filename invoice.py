@@ -1,6 +1,7 @@
 # The COPYRIGHT file at the top level of this repository contains the full
 # copyright notices and license terms.
 import hashlib
+from ast import literal_eval
 from decimal import Decimal
 from trytond.model import ModelView, fields
 from trytond.pool import Pool, PoolMeta
@@ -13,16 +14,14 @@ from sql import Null
 from sql.aggregate import Max
 from trytond.tools import grouped_slice
 from .aeat import (
-    OPERATION_KEY, BOOK_KEY, SEND_SPECIAL_REGIME_KEY,
-    RECEIVE_SPECIAL_REGIME_KEY, AEAT_INVOICE_STATE, IVA_SUBJECTED,
-    EXCEMPTION_CAUSE, INTRACOMUNITARY_TYPE, COMMUNICATION_TYPE)
+    OPERATION_KEY, BOOK_KEY, SEND_SPECIAL_REGIME_KEY, COMMUNICATION_TYPE,
+    RECEIVE_SPECIAL_REGIME_KEY, AEAT_INVOICE_STATE)
 
 
 __all__ = ['Invoice', 'ResetSIIKeysStart', 'ResetSIIKeys', 'ResetSIIKeysEnd']
 
 _SII_INVOICE_KEYS = ['sii_book_key', 'sii_operation_key', 'sii_issued_key',
-        'sii_received_key', 'sii_subjected_key', 'sii_excemption_key',
-        'sii_intracomunity_key']
+        'sii_received_key']
 
 MAX_SII_LINES = 300
 
@@ -42,14 +41,6 @@ class Invoice(metaclass=PoolMeta):
         states={
             'invisible': ~Eval('sii_book_key').in_(['R']),
         }, depends=['sii_book_key'])
-    sii_subjected_key = fields.Selection(IVA_SUBJECTED, 'Subjected')
-    sii_excemption_key = fields.Selection(EXCEMPTION_CAUSE,
-        'Excemption Cause')
-    sii_intracomunity_key = fields.Selection(INTRACOMUNITARY_TYPE,
-        'SII Intracommunity Key',
-        states={
-            'invisible': ~Eval('sii_book_key').in_(['U']),
-        }, depends=['sii_book_key'])
     sii_records = fields.One2Many('aeat.sii.report.lines', 'invoice',
         "SII Report Lines")
     sii_state = fields.Selection(AEAT_INVOICE_STATE,
@@ -64,13 +55,31 @@ class Invoice(metaclass=PoolMeta):
     def __setup__(cls):
         super(Invoice, cls).__setup__()
         sii_fields = ['sii_book_key', 'sii_operation_key',
-            'sii_received_key', 'sii_issued_key', 'sii_subjected_key',
-            'sii_excemption_key', 'sii_intracomunity_key','sii_pending_sending',
-            'sii_communication_type', 'sii_state', 'sii_header']
+            'sii_received_key', 'sii_issued_key', 'sii_state',
+            'sii_pending_sending', 'sii_communication_type', 'sii_header']
         cls._check_modify_exclude += sii_fields
         if hasattr(cls, '_intercompany_excluded_fields'):
             cls._intercompany_excluded_fields += sii_fields
             cls._intercompany_excluded_fields += ['sii_records']
+
+    @classmethod
+    def __register__(cls, module_name):
+        cursor = Transaction().connection.cursor()
+        table = cls.__table_handler__(module_name)
+        sql_table = cls.__table__()
+
+        exist_sii_intracomunity_key = table.column_exist('sii_intracomunity_key')
+        exist_sii_subjected_key = table.column_exist('sii_subjected_key')
+        exist_sii_excemption_key = table.column_exist('sii_excemption_key')
+
+        super(Invoice, cls).__register__(module_name)
+
+        if exist_sii_intracomunity_key:
+            table.drop_column('sii_intracomunity_key')
+        if exist_sii_subjected_key:
+            table.drop_column('sii_subjected_key')
+        if exist_sii_excemption_key:
+            table.drop_column('sii_excemption_key')
 
     @staticmethod
     def default_sii_pending_sending():
@@ -105,10 +114,11 @@ class Invoice(metaclass=PoolMeta):
             sii_record_id = max([s.id for s in issued_inv.sii_records])
             sii_record = SIIReportLine(sii_record_id)
             if issued_inv.sii_header:
-                if issued_inv.sii_header != sii_record.sii_header:
-                    delete_issued_invoices.append(issued_inv)
-                elif issued_inv.sii_header == sii_record.sii_header:
+                if (literal_eval(issued_inv.sii_header) ==
+                        literal_eval(sii_record.sii_header)):
                     modify_issued_invoices.append(issued_inv)
+                else:
+                    delete_issued_invoices.append(issued_inv)
 
         periods = {}
         for invoice in delete_issued_invoices:
@@ -185,10 +195,11 @@ class Invoice(metaclass=PoolMeta):
             sii_record_id = max([s.id for s in received_inv.sii_records])
             sii_record = SIIReportLine(sii_record_id)
             if received_inv.sii_header:
-                if received_inv.sii_header != sii_record.sii_header:
-                    delete_received_invoices.append(received_inv)
-                elif received_inv.sii_header == sii_record.sii_header:
+                if (literal_eval(received_inv.sii_header) ==
+                        literal_eval(sii_record.sii_header)):
                     modify_received_invoices.append(received_inv)
+                else:
+                    delete_received_invoices.append(received_inv)
 
         periods2 = {}
         for invoice in modify_received_invoices:
@@ -401,7 +412,6 @@ class Invoice(metaclass=PoolMeta):
         return 'R1' if self.untaxed_amount < Decimal('0.0') else 'F1'
 
     @classmethod
-    @ModelView.button
     def reset_sii_keys(cls, invoices):
         to_write = []
         for invoice in invoices:
@@ -461,9 +471,20 @@ class Invoice(metaclass=PoolMeta):
     @classmethod
     def post(cls, invoices):
         to_write = []
+
+        invoices2checksii = []
+        for invoice in invoices:
+            if not invoice.move or invoice.move.state == 'draft':
+                invoices2checksii.append(invoice)
+
         super(Invoice, cls).post(invoices)
 
-        for invoice in invoices:
+        #TODO:
+        # OUT invoice, check that all tax have the same TipoNoExenta and(or the same Exenta
+        # Suejta-Exenta --> Can only be one
+        # NoSujeta --> Can only be one
+
+        for invoice in invoices2checksii:
             values = {}
             if invoice.sii_book_key:
                 if not invoice.sii_operation_key:
@@ -472,6 +493,12 @@ class Invoice(metaclass=PoolMeta):
                 values['sii_pending_sending'] = True
                 values['sii_header'] = str(cls.get_sii_header(invoice, False))
                 to_write.extend(([invoice], values))
+            for tax in invoice.taxes:
+                if (tax.tax.sii_subjected_key in ('S2', 'S3') and
+                        not invoice.sii_operation_key in (
+                            'F1', 'R1', 'R2', 'R3', 'R4')):
+                    raise UserError(gettext('aeat_sii.msg_sii_operation_key_wrong',
+                        invoice=invoice))
         if to_write:
             cls.write(*to_write)
 
