@@ -46,6 +46,7 @@ requires = [
     'cryptography',
     'pyOpenSSL',
     'python-sql',
+    'zeep>1.6',
     ]
 for dep in info.get('depends', []):
     if not re.match(r'(ir|res)(\W|$)', dep):
