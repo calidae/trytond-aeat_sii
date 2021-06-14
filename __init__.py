@@ -1,6 +1,7 @@
 # The COPYRIGHT file at the top level of this repository contains the full
 # copyright notices and license terms.
 from trytond.pool import Pool
+from . import cron
 from . import invoice
 from . import aeat
 from . import party
@@ -14,8 +15,10 @@ from . import purchase
 
 def register():
     Pool.register(
+        account.Configuration,
         account.TemplateTax,
         account.Tax,
+        cron.Cron,
         party.Party,
         party.PartyIdentifier,
         company.Company,
@@ -28,8 +31,8 @@ def register():
         aeat.SIIReport,
         aeat.SIIReportLine,
         aeat.SIIReportLineTax,
-        aeat_mapping.IssuedTrytonInvoiceMapper,
-        aeat_mapping.RecievedTrytonInvoiceMapper,
+        aeat_mapping.IssuedInvoiceMapper,
+        aeat_mapping.RecievedInvoiceMapper,
         module='aeat_sii', type_='model')
     Pool.register(
         sale.Sale,
